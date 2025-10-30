@@ -8,6 +8,10 @@ h1 {
   font-weight: bold;
 }
 
+p {
+  color: #990000;
+}
+
 a {
   font-size: 50px;
   text-decoration: none;
