@@ -10,41 +10,41 @@
     background: #121212;
     color: #f2f2f2;
     padding: 2rem;
-    max-width: 750px;
+    max-width: 700px;
     margin: auto;
   }
-  h1 { text-align: center; color: #ff5264; }
+  h1 {
+    text-align: center;
+    color: #990000;
+  }
   .builder {
-    background: #222;
+    background: #1e1e1e;
     border-radius: 1rem;
     padding: 1rem;
     margin-bottom: 1rem;
-    box-shadow: 0 0 8px rgba(0,0,0,0.5);
-  }
-  .time-inputs {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: space-between;
-  }
-  .time-inputs input {
-    width: 30%;
-    padding: .4rem;
-    border: none;
-    border-radius: .5rem;
-    text-align: center;
+    box-shadow: 0 0 8px rgba(0,0,0,0.6);
   }
   label { display: block; margin: .3rem 0; }
+  input {
+    width: 32%;
+    padding: .4rem;
+    margin-right: .3rem;
+    border: none;
+    border-radius: .5rem;
+    background: #222;
+    color: #f2f2f2;
+    text-align: center;
+  }
   button {
-    background: #cd3244;
+    background: #990000;
     color: white;
     border: none;
     padding: .6rem 1rem;
     border-radius: .5rem;
     cursor: pointer;
     transition: background 0.2s;
-    margin-top: 0.4rem;
   }
-  button:hover { background: #991c2c; }
+  button:hover { background: #660000; }
   #potions {
     margin: 1rem 0;
     text-align: center;
@@ -53,6 +53,11 @@
     text-align: center;
     margin-top: 1rem;
     color: #d2d2d2;
+  }
+  .time-display {
+    margin-top: .5rem;
+    color: #aaa;
+    font-size: 0.9rem;
   }
 </style>
 </head>
@@ -71,45 +76,33 @@
 
 <script>
 const builderCount = 6;
-const potionBoost = 10; // 10× speed = 10 builder-hours per real hour
+const potionBoost = 10;
 const storageKey = "builderTrackerData";
 const boostKey = "activeBoost";
-const lastUpdateKey = "lastUpdateTime";
-
-// Utility conversions
-function hToMs(h) { return h * 3600000; }
-function msToH(ms) { return ms / 3600000; }
-function timeToHours(d, h, m) { return d*24 + h + m/60; }
-function hoursToTime(h) {
-  const days = Math.floor(h / 24);
-  const hours = Math.floor(h % 24);
-  const mins = Math.floor((h * 60) % 60);
-  return { days, hours, mins };
-}
 
 function loadBuilders() {
   const data = JSON.parse(localStorage.getItem(storageKey)) || [];
   const container = document.getElementById("builders");
   container.innerHTML = "";
-
   for (let i = 0; i < builderCount; i++) {
-    const b = data[i] || { name: "", hours: 0 };
-    const t = hoursToTime(parseFloat(b.hours) || 0);
-
+    const b = data[i] || { name: "", totalHours: 0, remaining: 0 };
     const div = document.createElement("div");
     div.className = "builder";
     div.innerHTML = `
       <h3>Builder ${i + 1}</h3>
       <label>Project Name:</label>
       <input type="text" id="name${i}" value="${b.name}">
-      <label>Remaining Time:</label>
-      <div class="time-inputs">
-        <input type="number" id="days${i}" value="${t.days}" min="0" placeholder="Days">
-        <input type="number" id="hours${i}" value="${t.hours}" min="0" max="23" placeholder="Hours">
-        <input type="number" id="mins${i}" value="${t.mins}" min="0" max="59" placeholder="Mins">
+      <label>Total Time:</label>
+      <div>
+        <input type="number" id="days${i}" placeholder="Days" value="${Math.floor(b.totalHours / 24) || ""}">
+        <input type="number" id="hours${i}" placeholder="Hours" value="${Math.floor(b.totalHours % 24) || ""}">
+        <input type="number" id="minutes${i}" placeholder="Minutes" value="${Math.floor((b.totalHours * 60) % 60) || ""}">
       </div>
       <button onclick="saveBuilder(${i})">Save</button>
-      <p id="display${i}"></p>
+      <div class="time-display" id="remaining${i}">
+        Remaining: ${formatTime(b.remaining || 0)}<br>
+        Total: ${formatTime(b.totalHours || 0)}
+      </div>
     `;
     container.appendChild(div);
   }
@@ -117,42 +110,45 @@ function loadBuilders() {
 
 function saveBuilder(i) {
   const name = document.getElementById(`name${i}`).value;
-  const d = parseFloat(document.getElementById(`days${i}`).value) || 0;
-  const h = parseFloat(document.getElementById(`hours${i}`).value) || 0;
-  const m = parseFloat(document.getElementById(`mins${i}`).value) || 0;
-  const totalHours = timeToHours(d, h, m);
-
+  const days = parseFloat(document.getElementById(`days${i}`).value) || 0;
+  const hours = parseFloat(document.getElementById(`hours${i}`).value) || 0;
+  const minutes = parseFloat(document.getElementById(`minutes${i}`).value) || 0;
+  const totalHours = days * 24 + hours + minutes / 60;
   const data = JSON.parse(localStorage.getItem(storageKey)) || [];
-  data[i] = { name, hours: totalHours };
+  data[i] = { name, totalHours, remaining: totalHours };
   localStorage.setItem(storageKey, JSON.stringify(data));
-  alert(`Builder ${i + 1} saved!`);
+  loadBuilders();
+}
+
+function formatTime(hours) {
+  const totalMinutes = Math.floor(hours * 60);
+  const d = Math.floor(totalMinutes / (60 * 24));
+  const h = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const m = totalMinutes % 60;
+  return `${d}d ${h}h ${m}m`;
 }
 
 function startPotion() {
-  const m = parseInt(document.getElementById("potionCount").value) || 1;
-  const totalDuration = hToMs(m); // 1 potion = 1 hour duration
-  const endTime = Date.now() + totalDuration;
-  localStorage.setItem(boostKey, JSON.stringify({ endTime }));
-  localStorage.setItem(lastUpdateKey, Date.now());
+  const m = parseFloat(document.getElementById("potionCount").value) || 1;
+  const duration = m * 60 * 60 * 1000;
+  const endTime = Date.now() + duration;
+  localStorage.setItem(boostKey, JSON.stringify({ endTime, m }));
   updateBoostStatus();
 }
 
 function updateBoostStatus() {
   const boost = JSON.parse(localStorage.getItem(boostKey));
   const status = document.getElementById("boost-status");
-
   if (!boost) {
     status.textContent = "No active boost";
     return;
   }
-
   const remaining = boost.endTime - Date.now();
   if (remaining <= 0) {
     localStorage.removeItem(boostKey);
     status.textContent = "Boost expired";
     return;
   }
-
   const hoursLeft = (remaining / 3600000).toFixed(2);
   status.textContent = `Boost Active: 10× speed for ${hoursLeft}h remaining`;
   applyRealTimeBoost();
@@ -160,48 +156,52 @@ function updateBoostStatus() {
 }
 
 function applyRealTimeBoost() {
+  const boost = JSON.parse(localStorage.getItem(boostKey));
+  if (!boost) return;
+
+  const lastUpdateKey = "lastUpdateTime";
   const now = Date.now();
   const lastUpdate = parseFloat(localStorage.getItem(lastUpdateKey)) || now;
   const elapsedMs = now - lastUpdate;
   localStorage.setItem(lastUpdateKey, now);
 
-  const elapsedHours = msToH(elapsedMs);
-  const acceleratedHours = elapsedHours * potionBoost; // 10× progress
+  const elapsedHours = elapsedMs / 3600000;
+  const accelerated = elapsedHours * potionBoost;
 
   const data = JSON.parse(localStorage.getItem(storageKey)) || [];
   let changed = false;
-
   for (let i = 0; i < data.length; i++) {
     if (!data[i]) continue;
-    let R = parseFloat(data[i].hours) || 0;
+    let R = parseFloat(data[i].remaining) || 0;
     if (R > 0) {
-      R = Math.max(R - acceleratedHours, 0);
-      data[i].hours = R;
+      R = Math.max(R - accelerated, 0);
+      data[i].remaining = R;
       changed = true;
-      const t = hoursToTime(R);
-      const display = document.getElementById(`display${i}`);
-      if (display)
-        display.textContent = `Remaining: ${t.days}d ${t.hours}h ${t.mins}m`;
     }
   }
+  if (changed) {
+    localStorage.setItem(storageKey, JSON.stringify(data));
+    refreshRemainingDisplay(data);
+  }
+}
 
-  if (changed) localStorage.setItem(storageKey, JSON.stringify(data));
+function refreshRemainingDisplay(data) {
+  for (let i = 0; i < data.length; i++) {
+    const div = document.getElementById(`remaining${i}`);
+    if (!div || !data[i]) continue;
+    div.innerHTML = `
+      Remaining: ${formatTime(data[i].remaining || 0)}<br>
+      Total: ${formatTime(data[i].totalHours || 0)}
+    `;
+  }
 }
 
 window.onload = () => {
   loadBuilders();
   updateBoostStatus();
   setInterval(() => {
-    // update timers even if boost inactive
-    const data = JSON.parse(localStorage.getItem(storageKey)) || [];
-    for (let i = 0; i < data.length; i++) {
-      const R = parseFloat(data[i]?.hours || 0);
-      const t = hoursToTime(R);
-      const display = document.getElementById(`display${i}`);
-      if (display)
-        display.textContent = `Remaining: ${t.days}d ${t.hours}h ${t.mins}m`;
-    }
-  }, 1000);
+    applyRealTimeBoost();
+  }, 60000);
 };
 </script>
 </body>
