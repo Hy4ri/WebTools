@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoC Builder Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .potion-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .potion-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .potion-controls label {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .potion-controls input {
+            width: 80px;
+            padding: 10px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .potion-info {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .builders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .builder-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .builder-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .builder-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .builder-icon {
+            font-size: 2em;
+        }
+
+        .builder-card input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .time-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .time-inputs input {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1em;
+        }
+
+        .time-inputs label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .time-display {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .time-remaining {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .original-time {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .status.free {
+            background: #4caf50;
+        }
+
+        .status.busy {
+            background: #ff9800;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-clear {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚒️ Clash of Clans Builder Tracker</h1>
+        
+        <div class="potion-section">
+            <div class="potion-controls">
+                <label>🧪 Builder Potions Active:</label>
+                <input type="number" id="potionCount" min="0" max="10" value="0">
+            </div>
+            <div class="potion-info">
+                Builder potions reduce remaining time by 10x (each potion lasts 1 hour)
+            </div>
+        </div>
+
+        <div class="builders-grid" id="buildersGrid"></div>
+    </div>
+
+    <script>
+        const BUILDER_COUNT = 6;
+        let builders = [];
+        let potionCount = 0;
+
+        function initBuilders() {
+            const saved = localStorage.getItem('cocBuilders');
+            if (saved) {
+                builders = JSON.parse(saved);
+            } else {
+                builders = Array(BUILDER_COUNT).fill(null).map((_, i) => ({
+                    id: i,
+                    name: `Builder ${i + 1}`,
+                    hours: 0,
+                    minutes: 0,
+                    seconds: 0,
+                    startTime: null
+                }));
+            }
+
+            const savedPotions = localStorage.getItem('cocPotions');
+            if (savedPotions) {
+                potionCount = parseInt(savedPotions);
+                document.getElementById('potionCount').value = potionCount;
+            }
+        }
+
+        function saveBuilders() {
+            localStorage.setItem('cocBuilders', JSON.stringify(builders));
+            localStorage.setItem('cocPotions', potionCount.toString());
+        }
+
+        function calculateRemainingTime(builder) {
+            if (!builder.startTime) return 0;
+
+            const now = Date.now();
+            const elapsed = now - builder.startTime;
+            const totalSeconds = (builder.hours * 3600) + (builder.minutes * 60) + builder.seconds;
+            
+            // Apply potion boost: time passes 10x faster per active potion
+            const effectiveElapsed = elapsed * (1 + potionCount * 9) / 1000;
+            const remaining = Math.max(0, totalSeconds - effectiveElapsed);
+            
+            return remaining;
+        }
+
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            return `${h}h ${m}m ${s}s`;
+        }
+
+        function renderBuilders() {
+            const grid = document.getElementById('buildersGrid');
+            grid.innerHTML = '';
+
+            builders.forEach((builder, index) => {
+                const card = document.createElement('div');
+                card.className = 'builder-card';
+
+                const remaining = calculateRemainingTime(builder);
+                const isBusy = remaining > 0;
+
+                card.innerHTML = `
+                    <div class="builder-header">
+                        <span class="builder-icon">👷</span>
+                        <input type="text" value="${builder.name}" 
+                               onchange="updateBuilderName(${index}, this.value)"
+                               placeholder="Builder Name">
+                    </div>
+
+                    <div class="time-inputs">
+                        <div>
+                            <label>Hours</label>
+                            <input type="number" min="0" value="${builder.hours}" 
+                                   onchange="updateBuilderTime(${index}, 'hours', this.value)">
+                        </div>
+                        <div>
+                            <label>Minutes</label>
+                            <input type="number" min="0" max="59" value="${builder.minutes}"
+                                   onchange="updateBuilderTime(${index}, 'minutes', this.value)">
+                        </div>
+                        <div>
+                            <label>Seconds</label>
+                            <input type="number" min="0" max="59" value="${builder.seconds}"
+                                   onchange="updateBuilderTime(${index}, 'seconds', this.value)">
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="startBuilder(${index})" 
+                            style="background: #2196F3; color: white;">
+                        ${isBusy ? 'Update' : 'Start'} Timer
+                    </button>
+
+                    <div class="time-display">
+                        <div class="time-remaining">
+                            ${isBusy ? formatTime(remaining) : 'Free'}
+                        </div>
+                        ${isBusy ? `<div class="original-time">Original: ${formatTime((builder.hours * 3600) + (builder.minutes * 60) + builder.seconds)}</div>` : ''}
+                        <span class="status ${isBusy ? 'busy' : 'free'}">
+                            ${isBusy ? '🔨 Working' : '✅ Available'}
+                        </span>
+                    </div>
+
+                    ${isBusy ? `<button class="btn btn-clear" onclick="clearBuilder(${index})">Clear Timer</button>` : ''}
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function updateBuilderName(index, name) {
+            builders[index].name = name;
+            saveBuilders();
+        }
+
+        function updateBuilderTime(index, field, value) {
+            builders[index][field] = parseInt(value) || 0;
+            saveBuilders();
+        }
+
+        function startBuilder(index) {
+            builders[index].startTime = Date.now();
+            saveBuilders();
+            renderBuilders();
+        }
+
+        function clearBuilder(index) {
+            builders[index].startTime = null;
+            builders[index].hours = 0;
+            builders[index].minutes = 0;
+            builders[index].seconds = 0;
+            saveBuilders();
+            renderBuilders();
+        }
+
+        document.getElementById('potionCount').addEventListener('change', function() {
+            potionCount = parseInt(this.value) || 0;
+            saveBuilders();
+            renderBuilders();
+        });
+
+        // Update timers every second
+        setInterval(renderBuilders, 1000);
+
+        // Initialize
+        initBuilders();
+        renderBuilders();
+    </script>
+</body>
+</html>
