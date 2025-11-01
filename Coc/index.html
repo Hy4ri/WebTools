@@ -1,569 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoC Builder Tracker</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #fff;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .potion-section {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-        }
-
-        .potion-controls {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .potion-label {
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-
-        .potion-input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .potion-controls input {
-            width: 80px;
-            padding: 10px;
-            font-size: 1.1em;
-            border: none;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .potion-controls button {
-            padding: 10px 20px;
-            font-size: 1em;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            background: #4caf50;
-            color: white;
-            transition: background 0.3s;
-        }
-
-        .potion-controls button:hover {
-            background: #45a049;
-        }
-
-        .potion-info {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-
-        .active-potions {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        .potion-item {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .potion-timer {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #ffd700;
-        }
-
-        .builders-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        @media (min-width: 768px) {
-            .builders-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        .builder-card {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-        }
-
-        .builder-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .builder-icon {
-            font-size: 2em;
-        }
-
-        .builder-card input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-        }
-
-        .time-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .time-inputs input {
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 1em;
-        }
-
-        .time-inputs label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-            text-align: center;
-        }
-
-        .time-display {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .time-remaining {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #ffd700;
-        }
-
-        .original-time {
-            font-size: 0.9em;
-            opacity: 0.8;
-            margin-top: 5px;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            margin-top: 10px;
-        }
-
-        .status.free {
-            background: #4caf50;
-        }
-
-        .status.busy {
-            background: #ff9800;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background 0.3s;
-            font-weight: bold;
-        }
-
-        .btn-clear {
-            background: #f44336;
-            color: white;
-        }
-
-        .btn-clear:hover {
-            background: #d32f2f;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoC Builder Tracker</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    background: #121212;
+    color: #f2f2f2;
+    padding: 2rem;
+    max-width: 700px;
+    margin: auto;
+  }
+  h1 { text-align: center; color: #ff5264; }
+  .builder {
+    background: #222;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 8px rgba(0,0,0,0.5);
+  }
+  label { display: block; margin: .3rem 0; }
+  input {
+    width: 100%;
+    padding: .4rem;
+    margin-bottom: .5rem;
+    border: none;
+    border-radius: .5rem;
+  }
+  button {
+    background: #cd3244;
+    color: white;
+    border: none;
+    padding: .6rem 1rem;
+    border-radius: .5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover { background: #991c2c; }
+  #potions {
+    margin: 1rem 0;
+    text-align: center;
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>⚒️ Clash of Clans Builder Tracker</h1>
-        
-        <div class="potion-section">
-            <div class="potion-controls">
-                <span class="potion-label">🧪 Builder Potions</span>
-                <div class="potion-input-group">
-                    <input type="number" id="potionAdd" min="1" value="1" placeholder="Amount">
-                    <button onclick="addPotions()">Add Potions</button>
-                </div>
-            </div>
-            <div class="potion-info">
-                Each potion boosts builders 10× for 1 hour (10 hours of work in 1 hour)
-            </div>
-            <div class="active-potions" id="activePotions"></div>
-        </div>
+<h1>Clash of Clans Builder Tracker</h1>
 
-        <div class="builders-grid" id="buildersGrid"></div>
-    </div>
+<div id="builders"></div>
 
-    <script>
-        const BUILDER_COUNT = 6;
-        const POTION_DURATION = 3600; // 1 hour in seconds
-        const BOOST_MULTIPLIER = 10; // 10x speed
-        let builders = [];
-        let activePotions = [];
+<div id="potions">
+  <label>Builder Potions Active:</label>
+  <input type="number" id="potionCount" min="0" max="10" value="0">
+  <button onclick="applyPotion()">Apply Potion Effect</button>
+</div>
 
-        function initBuilders() {
-            const saved = localStorage.getItem('cocBuilders');
-            if (saved) {
-                try {
-                    builders = JSON.parse(saved);
-                    builders = builders.map((b, i) => ({
-                        id: b.id || i,
-                        name: b.name || `Builder ${i + 1}`,
-                        days: b.days || 0,
-                        hours: b.hours || 0,
-                        minutes: b.minutes || 0,
-                        startTime: b.startTime || null
-                    }));
-                } catch (e) {
-                    console.error('Error loading builders:', e);
-                    builders = createDefaultBuilders();
-                }
-            } else {
-                builders = createDefaultBuilders();
-            }
+<script>
+const builderCount = 6;
+const potionBoost = 10; // hours reduced per builder potion
+const storageKey = "builderTrackerData";
 
-            const savedPotions = localStorage.getItem('cocPotions');
-            if (savedPotions) {
-                try {
-                    activePotions = JSON.parse(savedPotions);
-                    const now = Date.now();
-                    activePotions = activePotions.filter(p => p.expiresAt > now);
-                } catch (e) {
-                    console.error('Error loading potions:', e);
-                    activePotions = [];
-                }
-            }
-        }
+function loadBuilders() {
+  const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+  const container = document.getElementById("builders");
+  container.innerHTML = "";
+  for (let i = 0; i < builderCount; i++) {
+    const b = data[i] || { name: "", hours: "" };
+    const div = document.createElement("div");
+    div.className = "builder";
+    div.innerHTML = `
+      <h3>Builder ${i + 1}</h3>
+      <label>Project Name:</label>
+      <input type="text" id="name${i}" value="${b.name}">
+      <label>Remaining Time (hours):</label>
+      <input type="number" id="hours${i}" value="${b.hours}" min="0">
+      <button onclick="saveBuilder(${i})">Save</button>
+    `;
+    container.appendChild(div);
+  }
+}
 
-        function createDefaultBuilders() {
-            return Array(BUILDER_COUNT).fill(null).map((_, i) => ({
-                id: i,
-                name: `Builder ${i + 1}`,
-                days: 0,
-                hours: 0,
-                minutes: 0,
-                startTime: null
-            }));
-        }
+function saveBuilder(i) {
+  const name = document.getElementById(`name${i}`).value;
+  const hours = parseFloat(document.getElementById(`hours${i}`).value) || 0;
+  const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+  data[i] = { name, hours };
+  localStorage.setItem(storageKey, JSON.stringify(data));
+  alert(`Builder ${i + 1} saved!`);
+}
 
-        function saveBuilders() {
-            localStorage.setItem('cocBuilders', JSON.stringify(builders));
-            localStorage.setItem('cocPotions', JSON.stringify(activePotions));
-        }
+function applyPotion() {
+  const m = parseFloat(document.getElementById("potionCount").value) || 0;
+  if (m <= 0) return alert("No potions applied.");
 
-        function addPotions() {
-            const amount = parseInt(document.getElementById('potionAdd').value) || 1;
-            const now = Date.now();
-            
-            for (let i = 0; i < amount; i++) {
-                activePotions.push({
-                    id: now + i,
-                    startTime: now,
-                    expiresAt: now + (POTION_DURATION * 1000)
-                });
-            }
-            
-            saveBuilders();
-            renderPotions();
-        }
+  const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+  for (let i = 0; i < data.length; i++) {
+    if (!data[i]) continue;
+    const R = parseFloat(data[i].hours) || 0;
+    const Rnew = Math.max(R - (potionBoost * m), 0);
+    data[i].hours = Rnew.toFixed(2);
+  }
+  localStorage.setItem(storageKey, JSON.stringify(data));
+  loadBuilders();
+  alert(`${m} Builder Potion(s) applied! Each builder reduced by ${potionBoost * m} hours.`);
+}
 
-        function renderPotions() {
-            const container = document.getElementById('activePotions');
-            const now = Date.now();
-            
-            // Remove expired potions
-            activePotions = activePotions.filter(p => p.expiresAt > now);
-            saveBuilders();
-            
-            if (activePotions.length === 0) {
-                container.innerHTML = '<div style="text-align: center; opacity: 0.7;">No active potions</div>';
-                return;
-            }
-            
-            container.innerHTML = activePotions.map((potion, index) => {
-                const remaining = Math.max(0, (potion.expiresAt - now) / 1000);
-                return `
-                    <div class="potion-item">
-                        <span>🧪 Potion ${index + 1} ${index === 0 ? '(Active)' : '(Queued)'}</span>
-                        <span class="potion-timer">${formatTime(remaining)} remaining</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function calculateRemainingTime(builder) {
-            if (!builder.startTime) return 0;
-
-            const now = Date.now();
-            const realElapsed = (now - builder.startTime) / 1000; // Real seconds elapsed
-            const totalSeconds = (builder.days * 86400) + (builder.hours * 3600) + (builder.minutes * 60);
-            
-            // Calculate how many potions have been fully consumed
-            let workDone = 0;
-            let realTimeUsed = 0;
-            
-            // Sort potions by start time
-            const sortedPotions = [...activePotions].sort((a, b) => a.startTime - b.startTime);
-            
-            for (let potion of sortedPotions) {
-                const potionStartRelative = (potion.startTime - builder.startTime) / 1000;
-                const potionEndRelative = potionStartRelative + POTION_DURATION;
-                
-                // Skip potions that haven't started yet for this builder
-                if (potionStartRelative > realElapsed) break;
-                
-                // How much of this potion has been consumed?
-                const potionTimeConsumed = Math.min(
-                    POTION_DURATION, 
-                    realElapsed - potionStartRelative
-                );
-                
-                // During potion time: 10 hours of work per 1 hour of real time
-                // B = 10, so work done = potionTimeConsumed * 10
-                workDone += potionTimeConsumed * BOOST_MULTIPLIER;
-                realTimeUsed += potionTimeConsumed;
-            }
-            
-            // Any time not covered by potions runs at normal speed (1x)
-            const normalTime = realElapsed - realTimeUsed;
-            workDone += normalTime;
-            
-            const remaining = Math.max(0, totalSeconds - workDone);
-            return remaining;
-        }
-
-        function formatTime(seconds) {
-            const d = Math.floor(seconds / 86400);
-            const h = Math.floor((seconds % 86400) / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = Math.floor(seconds % 60);
-            
-            if (d > 0) {
-                return `${d}d ${h}h ${m}m`;
-            } else if (h > 0) {
-                return `${h}h ${m}m ${s}s`;
-            } else {
-                return `${m}m ${s}s`;
-            }
-        }
-
-        function calculateBoostedTime(totalSeconds) {
-            if (activePotions.length === 0) return null;
-            
-            // Each potion gives 1 hour of 10x boost = 10 hours of work in 1 hour
-            // So each potion reduces remaining time by 9 hours (10 hours work - 1 hour real time)
-            const totalPotionHours = activePotions.length;
-            const workDoneByPotions = totalPotionHours * BOOST_MULTIPLIER; // hours of work
-            const realTimeUsed = totalPotionHours; // hours of real time
-            const netReduction = workDoneByPotions - realTimeUsed; // hours saved
-            
-            const totalHours = totalSeconds / 3600;
-            const afterPotions = totalHours - netReduction;
-            
-            return Math.max(0, afterPotions * 3600);
-        }
-
-        function renderBuilders() {
-            const grid = document.getElementById('buildersGrid');
-            grid.innerHTML = '';
-
-            builders.forEach((builder, index) => {
-                const card = document.createElement('div');
-                card.className = 'builder-card';
-
-                const remaining = calculateRemainingTime(builder);
-                const isBusy = remaining > 0;
-                const totalSeconds = (builder.days * 86400) + (builder.hours * 3600) + (builder.minutes * 60);
-                const boostedTime = calculateBoostedTime(totalSeconds);
-
-                card.innerHTML = `
-                    <div class="builder-header">
-                        <span class="builder-icon">👷</span>
-                        <input type="text" value="${builder.name}" 
-                               onchange="updateBuilderName(${index}, this.value)"
-                               placeholder="Builder Name">
-                    </div>
-
-                    <div class="time-inputs">
-                        <div>
-                            <label>Days</label>
-                            <input type="number" min="0" value="${builder.days}" 
-                                   onchange="updateBuilderTime(${index}, 'days', this.value)">
-                        </div>
-                        <div>
-                            <label>Hours</label>
-                            <input type="number" min="0" max="23" value="${builder.hours}" 
-                                   onchange="updateBuilderTime(${index}, 'hours', this.value)">
-                        </div>
-                        <div>
-                            <label>Minutes</label>
-                            <input type="number" min="0" max="59" value="${builder.minutes}"
-                                   onchange="updateBuilderTime(${index}, 'minutes', this.value)">
-                        </div>
-                    </div>
-
-                    <button class="btn" onclick="startBuilder(${index})" 
-                            style="background: #2196F3; color: white;">
-                        ${isBusy ? 'Update' : 'Start'} Timer
-                    </button>
-
-                    <div class="time-display">
-                        <div class="time-remaining">
-                            ${isBusy ? formatTime(remaining) : 'Free'}
-                        </div>
-                        ${isBusy ? `
-                            <div class="original-time">Original: ${formatTime(totalSeconds)}</div>
-                            ${boostedTime !== null ? `<div class="original-time">With Potions: ${formatTime(boostedTime)}</div>` : ''}
-                        ` : ''}
-                        <span class="status ${isBusy ? 'busy' : 'free'}">
-                            ${isBusy ? '🔨 Working' : '✅ Available'}
-                        </span>
-                    </div>
-
-                    ${isBusy ? `<button class="btn btn-clear" onclick="clearBuilder(${index})">Clear Timer</button>` : ''}
-                `;
-
-                grid.appendChild(card);
-            });
-        }
-
-        function updateBuilderName(index, name) {
-            builders[index].name = name;
-            saveBuilders();
-        }
-
-        function updateBuilderTime(index, field, value) {
-            builders[index][field] = parseInt(value) || 0;
-            saveBuilders();
-        }
-
-        function startBuilder(index) {
-            const totalSeconds = (builders[index].days * 86400) + (builders[index].hours * 3600) + (builders[index].minutes * 60);
-            
-            if (totalSeconds > 0) {
-                builders[index].startTime = Date.now();
-                saveBuilders();
-                renderBuilders();
-            }
-        }
-
-        function clearBuilder(index) {
-            builders[index].startTime = null;
-            builders[index].days = 0;
-            builders[index].hours = 0;
-            builders[index].minutes = 0;
-            saveBuilders();
-            renderBuilders();
-        }
-
-        // Update timers every second
-        let updateInterval;
-        
-        function updateTimers() {
-            renderPotions();
-            
-            builders.forEach((builder, index) => {
-                const remaining = calculateRemainingTime(builder);
-                const isBusy = remaining > 0;
-                const totalSeconds = (builder.days * 86400) + (builder.hours * 3600) + (builder.minutes * 60);
-                const boostedTime = calculateBoostedTime(totalSeconds);
-                
-                const card = document.querySelectorAll('.builder-card')[index];
-                if (card) {
-                    const timeDisplay = card.querySelector('.time-display');
-                    if (timeDisplay) {
-                        timeDisplay.innerHTML = `
-                            <div class="time-remaining">
-                                ${isBusy ? formatTime(remaining) : 'Free'}
-                            </div>
-                            ${isBusy ? `
-                                <div class="original-time">Original: ${formatTime(totalSeconds)}</div>
-                                ${boostedTime !== null ? `<div class="original-time">With Potions: ${formatTime(boostedTime)}</div>` : ''}
-                            ` : ''}
-                            <span class="status ${isBusy ? 'busy' : 'free'}">
-                                ${isBusy ? '🔨 Working' : '✅ Available'}
-                            </span>
-                        `;
-                    }
-                }
-            });
-        }
-        
-        updateInterval = setInterval(updateTimers, 1000);
-
-        // Prevent backspace navigation
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Backspace') {
-                const target = e.target;
-                if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
-                    e.preventDefault();
-                }
-            }
-        });
-
-        // Initialize
-        initBuilders();
-        renderBuilders();
-        renderPotions();
-    </script>
+window.onload = loadBuilders;
+</script>
 </body>
 </html>
