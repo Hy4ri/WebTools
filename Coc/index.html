@@ -5,60 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CoC Builder Tracker</title>
 <style>
-  body {
-    font-family: system-ui, sans-serif;
-    background: #121212;
-    color: #f2f2f2;
-    padding: 2rem;
-    max-width: 700px;
-    margin: auto;
-  }
-  h1 {
-    text-align: center;
-    color: #990000;
-  }
-  .builder {
-    background: #1e1e1e;
-    border-radius: 1rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 0 8px rgba(0,0,0,0.6);
-  }
+  body { font-family: system-ui, sans-serif; background: #121212; color: #f2f2f2; padding: 2rem; max-width: 700px; margin: auto; }
+  h1 { text-align: center; color: #990000; }
+  .builder { background: #1e1e1e; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 0 8px rgba(0,0,0,0.6); }
   label { display: block; margin: .3rem 0; }
-  input {
-    width: 32%;
-    padding: .4rem;
-    margin-right: .3rem;
-    border: none;
-    border-radius: .5rem;
-    background: #222;
-    color: #f2f2f2;
-    text-align: center;
-  }
-  button {
-    background: #990000;
-    color: white;
-    border: none;
-    padding: .6rem 1rem;
-    border-radius: .5rem;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
+  input { width: 32%; padding: .4rem; margin-right: .3rem; border: none; border-radius: .5rem; background: #222; color: #f2f2f2; text-align: center; }
+  button { background: #990000; color: white; border: none; padding: .6rem 1rem; border-radius: .5rem; cursor: pointer; transition: background 0.2s; }
   button:hover { background: #660000; }
-  #potions {
-    margin: 1rem 0;
-    text-align: center;
-  }
-  #boost-status {
-    text-align: center;
-    margin-top: 1rem;
-    color: #d2d2d2;
-  }
-  .time-display {
-    margin-top: .5rem;
-    color: #aaa;
-    font-size: 0.9rem;
-  }
+  #potions { margin: 1rem 0; text-align: center; }
+  #boost-status { text-align: center; margin-top: 1rem; color: #d2d2d2; }
+  .time-display { margin-top: .5rem; color: #aaa; font-size: 0.9rem; }
 </style>
 </head>
 <body>
@@ -67,8 +23,9 @@
 <div id="builders"></div>
 
 <div id="potions">
-  <label>Active Boost Time (in hours):</label>
-  <input type="number" id="boostHours" min="0" step="0.1" value="1">
+  <label>Active Boost Duration:</label>
+  <input type="number" id="boostHours" min="0" placeholder="Hours" value="0">
+  <input type="number" id="boostMinutes" min="0" max="59" placeholder="Minutes" value="60">
   <button onclick="startBoost()">Activate Boost</button>
 </div>
 
@@ -80,12 +37,17 @@ const potionBoost = 10; // 10x faster
 const storageKey = "builderTrackerData";
 const boostKey = "activeBoost";
 
+// Request notification permission on load
+if ("Notification" in window && Notification.permission !== "granted") {
+  Notification.requestPermission();
+}
+
 function loadBuilders() {
   const data = JSON.parse(localStorage.getItem(storageKey)) || [];
   const container = document.getElementById("builders");
   container.innerHTML = "";
   for (let i = 0; i < builderCount; i++) {
-    const b = data[i] || { name: "", totalHours: 0, remaining: 0 };
+    const b = data[i] || { name: "", totalHours: 0, remaining: 0, notified: false };
     const div = document.createElement("div");
     div.className = "builder";
     div.innerHTML = `
@@ -115,7 +77,7 @@ function saveBuilder(i) {
   const minutes = parseFloat(document.getElementById(`minutes${i}`).value) || 0;
   const totalHours = days * 24 + hours + minutes / 60;
   const data = JSON.parse(localStorage.getItem(storageKey)) || [];
-  data[i] = { name, totalHours, remaining: totalHours };
+  data[i] = { name, totalHours, remaining: totalHours, notified: false };
   localStorage.setItem(storageKey, JSON.stringify(data));
   loadBuilders();
 }
@@ -136,14 +98,12 @@ function calcBoostedTime(hours) {
 }
 
 function startBoost() {
-  const boostHours = parseFloat(document.getElementById("boostHours").value) || 0;
-  const duration = boostHours * 3600000;
-  if (duration <= 0) {
-    alert("Please enter a valid boost duration!");
-    return;
-  }
+  const hours = parseFloat(document.getElementById("boostHours").value) || 0;
+  const minutes = parseFloat(document.getElementById("boostMinutes").value) || 0;
+  const duration = (hours + minutes/60) * 3600000;
+  if (duration <= 0) { alert("Enter a valid boost duration!"); return; }
   const endTime = Date.now() + duration;
-  localStorage.setItem(boostKey, JSON.stringify({ endTime, boostHours }));
+  localStorage.setItem(boostKey, JSON.stringify({ endTime, notified: false }));
   updateBoostStatus();
 }
 
@@ -155,36 +115,36 @@ function updateBoostStatus() {
     return;
   }
 
-  const remaining = boost.endTime - Date.now();
-  if (remaining <= 0) {
+  const remainingMs = boost.endTime - Date.now();
+  if (remainingMs <= 0) {
     localStorage.removeItem(boostKey);
+    if (!boost.notified) notifyBoostEnd();
     status.textContent = "Boost expired";
     return;
   }
 
-  const hoursLeft = (remaining / 3600000);
-  const d = Math.floor(hoursLeft / 24);
-  const h = Math.floor(hoursLeft % 24);
-  const m = Math.floor((hoursLeft * 60) % 60);
-  const s = Math.floor((hoursLeft * 3600) % 60);
+  const totalSeconds = Math.floor(remainingMs/1000);
+  const d = Math.floor(totalSeconds / 86400);
+  const h = Math.floor((totalSeconds % 86400) / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
 
   status.textContent = `Boost Active: 10× speed for ${d}d ${h}h ${m}m ${s}s remaining`;
+
   applyRealTimeBoost();
   requestAnimationFrame(updateBoostStatus);
 }
 
 function applyRealTimeBoost() {
   const boost = JSON.parse(localStorage.getItem(boostKey));
-  if (!boost) return;
-
-  const lastUpdateKey = "lastUpdateTime";
   const now = Date.now();
+  const lastUpdateKey = "lastUpdateTime";
   const lastUpdate = parseFloat(localStorage.getItem(lastUpdateKey)) || now;
   const elapsedMs = now - lastUpdate;
   localStorage.setItem(lastUpdateKey, now);
 
   const elapsedHours = elapsedMs / 3600000;
-  const accelerated = elapsedHours * potionBoost;
+  const accelerated = boost ? elapsedHours * potionBoost : elapsedHours;
 
   const data = JSON.parse(localStorage.getItem(storageKey)) || [];
   let changed = false;
@@ -193,8 +153,12 @@ function applyRealTimeBoost() {
     if (!data[i]) continue;
     let R = parseFloat(data[i].remaining) || 0;
     if (R > 0) {
-      R = Math.max(R - accelerated, 0);
-      data[i].remaining = R;
+      const newR = Math.max(R - accelerated, 0);
+      if (newR === 0 && !data[i].notified) {
+        notifyCompletion(data[i].name || `Builder ${i + 1}`);
+        data[i].notified = true;
+      }
+      data[i].remaining = newR;
       changed = true;
     }
   }
@@ -216,10 +180,26 @@ function refreshRemainingDisplay(data) {
   }
 }
 
+function notifyCompletion(builderName) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification("Builder Finished!", { body: `${builderName} has completed!` });
+  } else {
+    alert(`${builderName} has completed!`);
+  }
+}
+
+function notifyBoostEnd() {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification("Boost Ended!", { body: `Your builder boost has ended!` });
+  } else {
+    alert("Your builder boost has ended!");
+  }
+}
+
 window.onload = () => {
   loadBuilders();
   updateBoostStatus();
-  setInterval(applyRealTimeBoost, 1000); // every second
+  setInterval(applyRealTimeBoost, 1000); // update every second
 };
 </script>
 </body>
