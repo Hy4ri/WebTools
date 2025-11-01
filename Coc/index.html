@@ -245,7 +245,7 @@
                 </div>
             </div>
             <div class="potion-info">
-                Each potion lasts 1 hour and removes 9 hours from build time
+                Each potion boosts builders 10× for 1 hour (10 hours of work in 1 hour)
             </div>
             <div class="active-potions" id="activePotions"></div>
         </div>
@@ -256,7 +256,7 @@
     <script>
         const BUILDER_COUNT = 6;
         const POTION_DURATION = 3600; // 1 hour in seconds
-        const POTION_REDUCTION = 9 * 3600; // 9 hours in seconds
+        const BOOST_MULTIPLIER = 10; // 10x speed
         let builders = [];
         let activePotions = [];
 
@@ -265,7 +265,6 @@
             if (saved) {
                 try {
                     builders = JSON.parse(saved);
-                    // Ensure all builders have the required fields
                     builders = builders.map((b, i) => ({
                         id: b.id || i,
                         name: b.name || `Builder ${i + 1}`,
@@ -276,31 +275,16 @@
                     }));
                 } catch (e) {
                     console.error('Error loading builders:', e);
-                    builders = Array(BUILDER_COUNT).fill(null).map((_, i) => ({
-                        id: i,
-                        name: `Builder ${i + 1}`,
-                        days: 0,
-                        hours: 0,
-                        minutes: 0,
-                        startTime: null
-                    }));
+                    builders = createDefaultBuilders();
                 }
             } else {
-                builders = Array(BUILDER_COUNT).fill(null).map((_, i) => ({
-                    id: i,
-                    name: `Builder ${i + 1}`,
-                    days: 0,
-                    hours: 0,
-                    minutes: 0,
-                    startTime: null
-                }));
+                builders = createDefaultBuilders();
             }
 
             const savedPotions = localStorage.getItem('cocPotions');
             if (savedPotions) {
                 try {
                     activePotions = JSON.parse(savedPotions);
-                    // Remove expired potions
                     const now = Date.now();
                     activePotions = activePotions.filter(p => p.expiresAt > now);
                 } catch (e) {
@@ -308,6 +292,17 @@
                     activePotions = [];
                 }
             }
+        }
+
+        function createDefaultBuilders() {
+            return Array(BUILDER_COUNT).fill(null).map((_, i) => ({
+                id: i,
+                name: `Builder ${i + 1}`,
+                days: 0,
+                hours: 0,
+                minutes: 0,
+                startTime: null
+            }));
         }
 
         function saveBuilders() {
@@ -321,7 +316,7 @@
             
             for (let i = 0; i < amount; i++) {
                 activePotions.push({
-                    id: Date.now() + i,
+                    id: now + i,
                     startTime: now,
                     expiresAt: now + (POTION_DURATION * 1000)
                 });
@@ -329,17 +324,6 @@
             
             saveBuilders();
             renderPotions();
-        }
-
-        function getActivePotionCount() {
-            const now = Date.now();
-            // Remove expired potions
-            activePotions = activePotions.filter(p => p.expiresAt > now);
-            return activePotions.length;
-        }
-
-        function getTotalTimeReduction() {
-            return getActivePotionCount() * POTION_REDUCTION;
         }
 
         function renderPotions() {
@@ -355,11 +339,11 @@
                 return;
             }
             
-            container.innerHTML = activePotions.map(potion => {
+            container.innerHTML = activePotions.map((potion, index) => {
                 const remaining = Math.max(0, (potion.expiresAt - now) / 1000);
                 return `
                     <div class="potion-item">
-                        <span>🧪 Builder Potion</span>
+                        <span>🧪 Potion ${index + 1} ${index === 0 ? '(Active)' : '(Queued)'}</span>
                         <span class="potion-timer">${formatTime(remaining)} remaining</span>
                     </div>
                 `;
@@ -370,14 +354,40 @@
             if (!builder.startTime) return 0;
 
             const now = Date.now();
-            const elapsed = (now - builder.startTime) / 1000;
+            const realElapsed = (now - builder.startTime) / 1000; // Real seconds elapsed
             const totalSeconds = (builder.days * 86400) + (builder.hours * 3600) + (builder.minutes * 60);
             
-            // Subtract total time reduction from all active potions
-            const reduction = getTotalTimeReduction();
-            const adjustedTotal = Math.max(0, totalSeconds - reduction);
-            const remaining = Math.max(0, adjustedTotal - elapsed);
+            // Calculate how many potions have been fully consumed
+            let workDone = 0;
+            let realTimeUsed = 0;
             
+            // Sort potions by start time
+            const sortedPotions = [...activePotions].sort((a, b) => a.startTime - b.startTime);
+            
+            for (let potion of sortedPotions) {
+                const potionStartRelative = (potion.startTime - builder.startTime) / 1000;
+                const potionEndRelative = potionStartRelative + POTION_DURATION;
+                
+                // Skip potions that haven't started yet for this builder
+                if (potionStartRelative > realElapsed) break;
+                
+                // How much of this potion has been consumed?
+                const potionTimeConsumed = Math.min(
+                    POTION_DURATION, 
+                    realElapsed - potionStartRelative
+                );
+                
+                // During potion time: 10 hours of work per 1 hour of real time
+                // B = 10, so work done = potionTimeConsumed * 10
+                workDone += potionTimeConsumed * BOOST_MULTIPLIER;
+                realTimeUsed += potionTimeConsumed;
+            }
+            
+            // Any time not covered by potions runs at normal speed (1x)
+            const normalTime = realElapsed - realTimeUsed;
+            workDone += normalTime;
+            
+            const remaining = Math.max(0, totalSeconds - workDone);
             return remaining;
         }
 
@@ -397,9 +407,19 @@
         }
 
         function calculateBoostedTime(totalSeconds) {
-            const reduction = getTotalTimeReduction();
-            if (reduction === 0) return null;
-            return Math.max(0, totalSeconds - reduction);
+            if (activePotions.length === 0) return null;
+            
+            // Each potion gives 1 hour of 10x boost = 10 hours of work in 1 hour
+            // So each potion reduces remaining time by 9 hours (10 hours work - 1 hour real time)
+            const totalPotionHours = activePotions.length;
+            const workDoneByPotions = totalPotionHours * BOOST_MULTIPLIER; // hours of work
+            const realTimeUsed = totalPotionHours; // hours of real time
+            const netReduction = workDoneByPotions - realTimeUsed; // hours saved
+            
+            const totalHours = totalSeconds / 3600;
+            const afterPotions = totalHours - netReduction;
+            
+            return Math.max(0, afterPotions * 3600);
         }
 
         function renderBuilders() {
@@ -452,7 +472,7 @@
                         </div>
                         ${isBusy ? `
                             <div class="original-time">Original: ${formatTime(totalSeconds)}</div>
-                            ${boostedTime !== null ? `<div class="original-time">After Potions: ${formatTime(boostedTime)}</div>` : ''}
+                            ${boostedTime !== null ? `<div class="original-time">With Potions: ${formatTime(boostedTime)}</div>` : ''}
                         ` : ''}
                         <span class="status ${isBusy ? 'busy' : 'free'}">
                             ${isBusy ? '🔨 Working' : '✅ Available'}
@@ -477,9 +497,13 @@
         }
 
         function startBuilder(index) {
-            builders[index].startTime = Date.now();
-            saveBuilders();
-            renderBuilders();
+            const totalSeconds = (builders[index].days * 86400) + (builders[index].hours * 3600) + (builders[index].minutes * 60);
+            
+            if (totalSeconds > 0) {
+                builders[index].startTime = Date.now();
+                saveBuilders();
+                renderBuilders();
+            }
         }
 
         function clearBuilder(index) {
@@ -491,11 +515,10 @@
             renderBuilders();
         }
 
-        // Update timers every second without re-rendering inputs
+        // Update timers every second
         let updateInterval;
         
         function updateTimers() {
-            // Update potion display
             renderPotions();
             
             builders.forEach((builder, index) => {
@@ -514,7 +537,7 @@
                             </div>
                             ${isBusy ? `
                                 <div class="original-time">Original: ${formatTime(totalSeconds)}</div>
-                                ${boostedTime !== null ? `<div class="original-time">After Potions: ${formatTime(boostedTime)}</div>` : ''}
+                                ${boostedTime !== null ? `<div class="original-time">With Potions: ${formatTime(boostedTime)}</div>` : ''}
                             ` : ''}
                             <span class="status ${isBusy ? 'busy' : 'free'}">
                                 ${isBusy ? '🔨 Working' : '✅ Available'}
@@ -527,7 +550,7 @@
         
         updateInterval = setInterval(updateTimers, 1000);
 
-        // Prevent backspace from navigating back
+        // Prevent backspace navigation
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Backspace') {
                 const target = e.target;
