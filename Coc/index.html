@@ -76,7 +76,7 @@
 
 <script>
 const builderCount = 6;
-const potionBoost = 10;
+const potionBoost = 10; // 10x faster
 const storageKey = "builderTrackerData";
 const boostKey = "activeBoost";
 
@@ -101,7 +101,7 @@ function loadBuilders() {
       <button onclick="saveBuilder(${i})">Save</button>
       <div class="time-display" id="remaining${i}">
         Remaining: ${formatTime(b.remaining || 0)}<br>
-        Total: ${formatTime(b.totalHours || 0)}
+        Boosted Time: ${formatTime(calcBoostedTime(b.remaining || 0))}
       </div>
     `;
     container.appendChild(div);
@@ -128,9 +128,15 @@ function formatTime(hours) {
   return `${d}d ${h}h ${m}m`;
 }
 
+function calcBoostedTime(hours) {
+  const boost = JSON.parse(localStorage.getItem(boostKey));
+  if (!boost) return hours;
+  return hours / potionBoost; // 10x faster → takes 1/10th the real time
+}
+
 function startPotion() {
   const m = parseFloat(document.getElementById("potionCount").value) || 1;
-  const duration = m * 60 * 60 * 1000;
+  const duration = m * 60 * 60 * 1000; // each potion = 1h duration
   const endTime = Date.now() + duration;
   localStorage.setItem(boostKey, JSON.stringify({ endTime, m }));
   updateBoostStatus();
@@ -143,14 +149,17 @@ function updateBoostStatus() {
     status.textContent = "No active boost";
     return;
   }
+
   const remaining = boost.endTime - Date.now();
   if (remaining <= 0) {
     localStorage.removeItem(boostKey);
     status.textContent = "Boost expired";
     return;
   }
+
   const hoursLeft = (remaining / 3600000).toFixed(2);
   status.textContent = `Boost Active: 10× speed for ${hoursLeft}h remaining`;
+
   applyRealTimeBoost();
   requestAnimationFrame(updateBoostStatus);
 }
@@ -170,6 +179,7 @@ function applyRealTimeBoost() {
 
   const data = JSON.parse(localStorage.getItem(storageKey)) || [];
   let changed = false;
+
   for (let i = 0; i < data.length; i++) {
     if (!data[i]) continue;
     let R = parseFloat(data[i].remaining) || 0;
@@ -179,6 +189,7 @@ function applyRealTimeBoost() {
       changed = true;
     }
   }
+
   if (changed) {
     localStorage.setItem(storageKey, JSON.stringify(data));
     refreshRemainingDisplay(data);
@@ -191,7 +202,7 @@ function refreshRemainingDisplay(data) {
     if (!div || !data[i]) continue;
     div.innerHTML = `
       Remaining: ${formatTime(data[i].remaining || 0)}<br>
-      Total: ${formatTime(data[i].totalHours || 0)}
+      Boosted Time: ${formatTime(calcBoostedTime(data[i].remaining || 0))}
     `;
   }
 }
@@ -199,9 +210,7 @@ function refreshRemainingDisplay(data) {
 window.onload = () => {
   loadBuilders();
   updateBoostStatus();
-  setInterval(() => {
-    applyRealTimeBoost();
-  }, 60000);
+  setInterval(applyRealTimeBoost, 60000);
 };
 </script>
 </body>
