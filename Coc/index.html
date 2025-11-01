@@ -364,11 +364,50 @@
         document.getElementById('potionCount').addEventListener('change', function() {
             potionCount = parseInt(this.value) || 0;
             saveBuilders();
-            renderBuilders();
         });
 
-        // Update timers every second
-        setInterval(renderBuilders, 1000);
+        // Prevent backspace from navigating back
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace') {
+                const target = e.target;
+                if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // Update timers every second without re-rendering inputs
+        let updateInterval;
+        
+        function updateTimers() {
+            builders.forEach((builder, index) => {
+                const remaining = calculateRemainingTime(builder);
+                const isBusy = remaining > 0;
+                const totalSeconds = (builder.days * 86400) + (builder.hours * 3600) + (builder.minutes * 60);
+                const boostedTime = calculateBoostedTime(totalSeconds);
+                
+                const card = document.querySelectorAll('.builder-card')[index];
+                if (card) {
+                    const timeDisplay = card.querySelector('.time-display');
+                    if (timeDisplay) {
+                        timeDisplay.innerHTML = `
+                            <div class="time-remaining">
+                                ${isBusy ? formatTime(remaining) : 'Free'}
+                            </div>
+                            ${isBusy ? `
+                                <div class="original-time">Original: ${formatTime(totalSeconds)}</div>
+                                ${boostedTime ? `<div class="original-time">With Boost: ${formatTime(boostedTime)}</div>` : ''}
+                            ` : ''}
+                            <span class="status ${isBusy ? 'busy' : 'free'}">
+                                ${isBusy ? '🔨 Working' : '✅ Available'}
+                            </span>
+                        `;
+                    }
+                }
+            });
+        }
+        
+        updateInterval = setInterval(updateTimers, 1000);
 
         // Initialize
         initBuilders();
