@@ -29,14 +29,10 @@
     padding: .8rem 1rem;
     margin: .3rem 0;
     border-radius: .5rem;
-    opacity: 0.95;
-    animation: fadeout 5s forwards;
+    cursor: pointer;
+    transition: background 0.2s;
   }
-  @keyframes fadeout {
-    0% { opacity: 0.95; }
-    80% { opacity: 0.95; }
-    100% { opacity: 0; display: none; }
-  }
+  .popup:hover { background: #660000; }
   .warning { background: #ff9900; color: #121212; }
 </style>
 </head>
@@ -67,8 +63,8 @@ function showPopup(message, type = "popup") {
   const div = document.createElement("div");
   div.className = type;
   div.textContent = message;
+  div.onclick = () => div.remove(); // click to dismiss
   container.appendChild(div);
-  setTimeout(() => { div.remove(); }, 5000);
 }
 
 function loadBuilders() {
@@ -202,7 +198,6 @@ function applyRealTimeBoost() {
   }
 }
 
-// Refresh display of times
 function refreshRemainingDisplay(data) {
   for (let i = 0; i < data.length; i++) {
     const div = document.getElementById(`remaining${i}`);
@@ -214,7 +209,6 @@ function refreshRemainingDisplay(data) {
   }
 }
 
-// Check if boost duration is sufficient to finish any upgrade
 function checkBoostSufficiency() {
   const boost = JSON.parse(localStorage.getItem(boostKey));
   if (!boost) return;
