@@ -43,6 +43,11 @@
     margin: 1rem 0;
     text-align: center;
   }
+  #boost-status {
+    text-align: center;
+    margin-top: 1rem;
+    color: #d2d2d2;
+  }
 </style>
 </head>
 <body>
@@ -51,15 +56,18 @@
 <div id="builders"></div>
 
 <div id="potions">
-  <label>Builder Potions Active:</label>
-  <input type="number" id="potionCount" min="0" max="10" value="0">
-  <button onclick="applyPotion()">Apply Potion Effect</button>
+  <label>Builder Potions Used:</label>
+  <input type="number" id="potionCount" min="1" max="100" value="1">
+  <button onclick="startPotion()">Activate Potion</button>
 </div>
+
+<div id="boost-status">No active boost</div>
 
 <script>
 const builderCount = 6;
-const potionBoost = 10; // hours reduced per builder potion
+const potionBoost = 10; // 10x speed means 10 builder-hours per real hour
 const storageKey = "builderTrackerData";
+const boostKey = "activeBoost";
 
 function loadBuilders() {
   const data = JSON.parse(localStorage.getItem(storageKey)) || [];
@@ -90,23 +98,71 @@ function saveBuilder(i) {
   alert(`Builder ${i + 1} saved!`);
 }
 
-function applyPotion() {
-  const m = parseFloat(document.getElementById("potionCount").value) || 0;
-  if (m <= 0) return alert("No potions applied.");
-
-  const data = JSON.parse(localStorage.getItem(storageKey)) || [];
-  for (let i = 0; i < data.length; i++) {
-    if (!data[i]) continue;
-    const R = parseFloat(data[i].hours) || 0;
-    const Rnew = Math.max(R - (potionBoost * m), 0);
-    data[i].hours = Rnew.toFixed(2);
-  }
-  localStorage.setItem(storageKey, JSON.stringify(data));
-  loadBuilders();
-  alert(`${m} Builder Potion(s) applied! Each builder reduced by ${potionBoost * m} hours.`);
+function startPotion() {
+  const m = parseFloat(document.getElementById("potionCount").value) || 1;
+  const totalDuration = m * 60 * 60 * 1000; // convert to milliseconds
+  const endTime = Date.now() + totalDuration;
+  localStorage.setItem(boostKey, JSON.stringify({ endTime, m }));
+  updateBoostStatus();
 }
 
-window.onload = loadBuilders;
+function updateBoostStatus() {
+  const boost = JSON.parse(localStorage.getItem(boostKey));
+  const status = document.getElementById("boost-status");
+
+  if (!boost) {
+    status.textContent = "No active boost";
+    return;
+  }
+
+  const remaining = boost.endTime - Date.now();
+  if (remaining <= 0) {
+    localStorage.removeItem(boostKey);
+    status.textContent = "Boost expired";
+    return;
+  }
+
+  const hoursLeft = (remaining / 3600000).toFixed(2);
+  status.textContent = `Boost Active: 10× speed for ${hoursLeft}h remaining`;
+
+  // Apply boost effect gradually
+  applyRealTimeBoost(boost.m);
+
+  requestAnimationFrame(updateBoostStatus);
+}
+
+function applyRealTimeBoost(m) {
+  // calculate time passed since last update and reduce builder hours
+  const lastUpdateKey = "lastUpdateTime";
+  const now = Date.now();
+  const lastUpdate = parseFloat(localStorage.getItem(lastUpdateKey)) || now;
+  const elapsedMs = now - lastUpdate;
+  localStorage.setItem(lastUpdateKey, now);
+
+  const elapsedHours = elapsedMs / 3600000; // real hours passed
+  const acceleratedHours = elapsedHours * potionBoost; // 10x speed
+
+  const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+  let changed = false;
+
+  for (let i = 0; i < data.length; i++) {
+    if (!data[i]) continue;
+    let R = parseFloat(data[i].hours) || 0;
+    if (R > 0) {
+      R = Math.max(R - acceleratedHours, 0);
+      data[i].hours = R.toFixed(2);
+      changed = true;
+    }
+  }
+
+  if (changed) localStorage.setItem(storageKey, JSON.stringify(data));
+  if (changed) loadBuilders();
+}
+
+window.onload = () => {
+  loadBuilders();
+  updateBoostStatus();
+};
 </script>
 </body>
 </html>
