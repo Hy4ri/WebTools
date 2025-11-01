@@ -15,10 +15,35 @@
   #potions { margin: 1rem 0; text-align: center; }
   #boost-status { text-align: center; margin-top: 1rem; color: #d2d2d2; }
   .time-display { margin-top: .5rem; color: #aaa; font-size: 0.9rem; }
+  #notifications {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 90%;
+    z-index: 1000;
+  }
+  .popup {
+    background: #990000;
+    color: #f2f2f2;
+    padding: .8rem 1rem;
+    margin: .3rem 0;
+    border-radius: .5rem;
+    opacity: 0.95;
+    animation: fadeout 5s forwards;
+  }
+  @keyframes fadeout {
+    0% { opacity: 0.95; }
+    80% { opacity: 0.95; }
+    100% { opacity: 0; display: none; }
+  }
+  .warning { background: #ff9900; color: #121212; }
 </style>
 </head>
 <body>
 <h1>Clash of Clans Builder Tracker</h1>
+
+<div id="notifications"></div>
 
 <div id="builders"></div>
 
@@ -37,9 +62,13 @@ const potionBoost = 10; // 10x faster
 const storageKey = "builderTrackerData";
 const boostKey = "activeBoost";
 
-// Request notification permission on load
-if ("Notification" in window && Notification.permission !== "granted") {
-  Notification.requestPermission();
+function showPopup(message, type = "popup") {
+  const container = document.getElementById("notifications");
+  const div = document.createElement("div");
+  div.className = type;
+  div.textContent = message;
+  container.appendChild(div);
+  setTimeout(() => { div.remove(); }, 5000);
 }
 
 function loadBuilders() {
@@ -80,6 +109,7 @@ function saveBuilder(i) {
   data[i] = { name, totalHours, remaining: totalHours, notified: false };
   localStorage.setItem(storageKey, JSON.stringify(data));
   loadBuilders();
+  checkBoostSufficiency();
 }
 
 function formatTime(hours) {
@@ -100,11 +130,12 @@ function calcBoostedTime(hours) {
 function startBoost() {
   const hours = parseFloat(document.getElementById("boostHours").value) || 0;
   const minutes = parseFloat(document.getElementById("boostMinutes").value) || 0;
-  const duration = (hours + minutes/60) * 3600000;
-  if (duration <= 0) { alert("Enter a valid boost duration!"); return; }
+  const duration = (hours + minutes / 60) * 3600000;
+  if (duration <= 0) { showPopup("Enter a valid boost duration!", "warning"); return; }
   const endTime = Date.now() + duration;
   localStorage.setItem(boostKey, JSON.stringify({ endTime, notified: false }));
   updateBoostStatus();
+  checkBoostSufficiency();
 }
 
 function updateBoostStatus() {
@@ -118,12 +149,14 @@ function updateBoostStatus() {
   const remainingMs = boost.endTime - Date.now();
   if (remainingMs <= 0) {
     localStorage.removeItem(boostKey);
-    if (!boost.notified) notifyBoostEnd();
+    if (!boost.notified) {
+      showPopup("Your boost has ended!", "popup");
+    }
     status.textContent = "Boost expired";
     return;
   }
 
-  const totalSeconds = Math.floor(remainingMs/1000);
+  const totalSeconds = Math.floor(remainingMs / 1000);
   const d = Math.floor(totalSeconds / 86400);
   const h = Math.floor((totalSeconds % 86400) / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
@@ -155,7 +188,7 @@ function applyRealTimeBoost() {
     if (R > 0) {
       const newR = Math.max(R - accelerated, 0);
       if (newR === 0 && !data[i].notified) {
-        notifyCompletion(data[i].name || `Builder ${i + 1}`);
+        showPopup(`${data[i].name || `Builder ${i + 1}`} has finished!`, "popup");
         data[i].notified = true;
       }
       data[i].remaining = newR;
@@ -169,6 +202,7 @@ function applyRealTimeBoost() {
   }
 }
 
+// Refresh display of times
 function refreshRemainingDisplay(data) {
   for (let i = 0; i < data.length; i++) {
     const div = document.getElementById(`remaining${i}`);
@@ -180,26 +214,27 @@ function refreshRemainingDisplay(data) {
   }
 }
 
-function notifyCompletion(builderName) {
-  if ("Notification" in window && Notification.permission === "granted") {
-    new Notification("Builder Finished!", { body: `${builderName} has completed!` });
-  } else {
-    alert(`${builderName} has completed!`);
-  }
-}
+// Check if boost duration is sufficient to finish any upgrade
+function checkBoostSufficiency() {
+  const boost = JSON.parse(localStorage.getItem(boostKey));
+  if (!boost) return;
 
-function notifyBoostEnd() {
-  if ("Notification" in window && Notification.permission === "granted") {
-    new Notification("Boost Ended!", { body: `Your builder boost has ended!` });
-  } else {
-    alert("Your builder boost has ended!");
+  const remainingBoostHours = (boost.endTime - Date.now()) / 3600000;
+  const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+  for (let i = 0; i < data.length; i++) {
+    if (!data[i]) continue;
+    const boostedTimeNeeded = data[i].remaining / potionBoost;
+    if (boostedTimeNeeded > remainingBoostHours) {
+      showPopup(`${data[i].name || `Builder ${i + 1}`} won't finish with current boost!`, "warning");
+    }
   }
 }
 
 window.onload = () => {
   loadBuilders();
   updateBoostStatus();
-  setInterval(applyRealTimeBoost, 1000); // update every second
+  setInterval(applyRealTimeBoost, 1000);
 };
 </script>
 </body>
