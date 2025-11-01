@@ -67,9 +67,9 @@
 <div id="builders"></div>
 
 <div id="potions">
-  <label>Builder Potions Used:</label>
-  <input type="number" id="potionCount" min="1" max="100" value="1">
-  <button onclick="startPotion()">Activate Potion</button>
+  <label>Active Boost Time (in hours):</label>
+  <input type="number" id="boostHours" min="0" step="0.1" value="1">
+  <button onclick="startBoost()">Activate Boost</button>
 </div>
 
 <div id="boost-status">No active boost</div>
@@ -121,24 +121,29 @@ function saveBuilder(i) {
 }
 
 function formatTime(hours) {
-  const totalMinutes = Math.floor(hours * 60);
-  const d = Math.floor(totalMinutes / (60 * 24));
-  const h = Math.floor((totalMinutes % (60 * 24)) / 60);
-  const m = totalMinutes % 60;
-  return `${d}d ${h}h ${m}m`;
+  const totalSeconds = Math.floor(hours * 3600);
+  const d = Math.floor(totalSeconds / 86400);
+  const h = Math.floor((totalSeconds % 86400) / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return `${d}d ${h}h ${m}m ${s}s`;
 }
 
 function calcBoostedTime(hours) {
   const boost = JSON.parse(localStorage.getItem(boostKey));
   if (!boost) return hours;
-  return hours / potionBoost; // 10x faster → takes 1/10th the real time
+  return hours / potionBoost;
 }
 
-function startPotion() {
-  const m = parseFloat(document.getElementById("potionCount").value) || 1;
-  const duration = m * 60 * 60 * 1000; // each potion = 1h duration
+function startBoost() {
+  const boostHours = parseFloat(document.getElementById("boostHours").value) || 0;
+  const duration = boostHours * 3600000;
+  if (duration <= 0) {
+    alert("Please enter a valid boost duration!");
+    return;
+  }
   const endTime = Date.now() + duration;
-  localStorage.setItem(boostKey, JSON.stringify({ endTime, m }));
+  localStorage.setItem(boostKey, JSON.stringify({ endTime, boostHours }));
   updateBoostStatus();
 }
 
@@ -157,9 +162,13 @@ function updateBoostStatus() {
     return;
   }
 
-  const hoursLeft = (remaining / 3600000).toFixed(2);
-  status.textContent = `Boost Active: 10× speed for ${hoursLeft}h remaining`;
+  const hoursLeft = (remaining / 3600000);
+  const d = Math.floor(hoursLeft / 24);
+  const h = Math.floor(hoursLeft % 24);
+  const m = Math.floor((hoursLeft * 60) % 60);
+  const s = Math.floor((hoursLeft * 3600) % 60);
 
+  status.textContent = `Boost Active: 10× speed for ${d}d ${h}h ${m}m ${s}s remaining`;
   applyRealTimeBoost();
   requestAnimationFrame(updateBoostStatus);
 }
@@ -210,7 +219,7 @@ function refreshRemainingDisplay(data) {
 window.onload = () => {
   loadBuilders();
   updateBoostStatus();
-  setInterval(applyRealTimeBoost, 60000);
+  setInterval(applyRealTimeBoost, 1000); // every second
 };
 </script>
 </body>
