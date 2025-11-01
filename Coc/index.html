@@ -86,11 +86,6 @@
             border-radius: 15px;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
-        }
-
-        .builder-card:hover {
-            transform: translateY(-5px);
         }
 
         .builder-header {
@@ -223,9 +218,9 @@
                 builders = Array(BUILDER_COUNT).fill(null).map((_, i) => ({
                     id: i,
                     name: `Builder ${i + 1}`,
+                    days: 0,
                     hours: 0,
                     minutes: 0,
-                    seconds: 0,
                     startTime: null
                 }));
             }
@@ -247,7 +242,7 @@
 
             const now = Date.now();
             const elapsed = now - builder.startTime;
-            const totalSeconds = (builder.hours * 3600) + (builder.minutes * 60) + builder.seconds;
+            const totalSeconds = (builder.days * 86400) + (builder.hours * 3600) + (builder.minutes * 60);
             
             // Apply potion boost: time passes 10x faster per active potion
             const effectiveElapsed = elapsed * (1 + potionCount * 9) / 1000;
@@ -257,10 +252,24 @@
         }
 
         function formatTime(seconds) {
-            const h = Math.floor(seconds / 3600);
+            const d = Math.floor(seconds / 86400);
+            const h = Math.floor((seconds % 86400) / 3600);
             const m = Math.floor((seconds % 3600) / 60);
             const s = Math.floor(seconds % 60);
-            return `${h}h ${m}m ${s}s`;
+            
+            if (d > 0) {
+                return `${d}d ${h}h ${m}m`;
+            } else if (h > 0) {
+                return `${h}h ${m}m ${s}s`;
+            } else {
+                return `${m}m ${s}s`;
+            }
+        }
+
+        function calculateBoostedTime(totalSeconds) {
+            if (potionCount === 0) return null;
+            const boostedSeconds = totalSeconds / (1 + potionCount * 9);
+            return boostedSeconds;
         }
 
         function renderBuilders() {
@@ -273,6 +282,8 @@
 
                 const remaining = calculateRemainingTime(builder);
                 const isBusy = remaining > 0;
+                const totalSeconds = (builder.days * 86400) + (builder.hours * 3600) + (builder.minutes * 60);
+                const boostedTime = calculateBoostedTime(totalSeconds);
 
                 card.innerHTML = `
                     <div class="builder-header">
@@ -284,19 +295,19 @@
 
                     <div class="time-inputs">
                         <div>
+                            <label>Days</label>
+                            <input type="number" min="0" value="${builder.days}" 
+                                   onchange="updateBuilderTime(${index}, 'days', this.value)">
+                        </div>
+                        <div>
                             <label>Hours</label>
-                            <input type="number" min="0" value="${builder.hours}" 
+                            <input type="number" min="0" max="23" value="${builder.hours}" 
                                    onchange="updateBuilderTime(${index}, 'hours', this.value)">
                         </div>
                         <div>
                             <label>Minutes</label>
                             <input type="number" min="0" max="59" value="${builder.minutes}"
                                    onchange="updateBuilderTime(${index}, 'minutes', this.value)">
-                        </div>
-                        <div>
-                            <label>Seconds</label>
-                            <input type="number" min="0" max="59" value="${builder.seconds}"
-                                   onchange="updateBuilderTime(${index}, 'seconds', this.value)">
                         </div>
                     </div>
 
@@ -309,7 +320,10 @@
                         <div class="time-remaining">
                             ${isBusy ? formatTime(remaining) : 'Free'}
                         </div>
-                        ${isBusy ? `<div class="original-time">Original: ${formatTime((builder.hours * 3600) + (builder.minutes * 60) + builder.seconds)}</div>` : ''}
+                        ${isBusy ? `
+                            <div class="original-time">Original: ${formatTime(totalSeconds)}</div>
+                            ${boostedTime ? `<div class="original-time">With Boost: ${formatTime(boostedTime)}</div>` : ''}
+                        ` : ''}
                         <span class="status ${isBusy ? 'busy' : 'free'}">
                             ${isBusy ? '🔨 Working' : '✅ Available'}
                         </span>
@@ -340,9 +354,9 @@
 
         function clearBuilder(index) {
             builders[index].startTime = null;
+            builders[index].days = 0;
             builders[index].hours = 0;
             builders[index].minutes = 0;
-            builders[index].seconds = 0;
             saveBuilders();
             renderBuilders();
         }
