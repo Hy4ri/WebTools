@@ -10,7 +10,7 @@
     background: #121212;
     color: #f2f2f2;
     padding: 2rem;
-    max-width: 700px;
+    max-width: 750px;
     margin: auto;
   }
   h1 { text-align: center; color: #ff5264; }
@@ -21,14 +21,19 @@
     margin-bottom: 1rem;
     box-shadow: 0 0 8px rgba(0,0,0,0.5);
   }
-  label { display: block; margin: .3rem 0; }
-  input {
-    width: 100%;
+  .time-inputs {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+  }
+  .time-inputs input {
+    width: 30%;
     padding: .4rem;
-    margin-bottom: .5rem;
     border: none;
     border-radius: .5rem;
+    text-align: center;
   }
+  label { display: block; margin: .3rem 0; }
   button {
     background: #cd3244;
     color: white;
@@ -37,6 +42,7 @@
     border-radius: .5rem;
     cursor: pointer;
     transition: background 0.2s;
+    margin-top: 0.4rem;
   }
   button:hover { background: #991c2c; }
   #potions {
@@ -65,25 +71,45 @@
 
 <script>
 const builderCount = 6;
-const potionBoost = 10; // 10x speed means 10 builder-hours per real hour
+const potionBoost = 10; // 10× speed = 10 builder-hours per real hour
 const storageKey = "builderTrackerData";
 const boostKey = "activeBoost";
+const lastUpdateKey = "lastUpdateTime";
+
+// Utility conversions
+function hToMs(h) { return h * 3600000; }
+function msToH(ms) { return ms / 3600000; }
+function timeToHours(d, h, m) { return d*24 + h + m/60; }
+function hoursToTime(h) {
+  const days = Math.floor(h / 24);
+  const hours = Math.floor(h % 24);
+  const mins = Math.floor((h * 60) % 60);
+  return { days, hours, mins };
+}
 
 function loadBuilders() {
   const data = JSON.parse(localStorage.getItem(storageKey)) || [];
   const container = document.getElementById("builders");
   container.innerHTML = "";
+
   for (let i = 0; i < builderCount; i++) {
-    const b = data[i] || { name: "", hours: "" };
+    const b = data[i] || { name: "", hours: 0 };
+    const t = hoursToTime(parseFloat(b.hours) || 0);
+
     const div = document.createElement("div");
     div.className = "builder";
     div.innerHTML = `
       <h3>Builder ${i + 1}</h3>
       <label>Project Name:</label>
       <input type="text" id="name${i}" value="${b.name}">
-      <label>Remaining Time (hours):</label>
-      <input type="number" id="hours${i}" value="${b.hours}" min="0">
+      <label>Remaining Time:</label>
+      <div class="time-inputs">
+        <input type="number" id="days${i}" value="${t.days}" min="0" placeholder="Days">
+        <input type="number" id="hours${i}" value="${t.hours}" min="0" max="23" placeholder="Hours">
+        <input type="number" id="mins${i}" value="${t.mins}" min="0" max="59" placeholder="Mins">
+      </div>
       <button onclick="saveBuilder(${i})">Save</button>
+      <p id="display${i}"></p>
     `;
     container.appendChild(div);
   }
@@ -91,18 +117,23 @@ function loadBuilders() {
 
 function saveBuilder(i) {
   const name = document.getElementById(`name${i}`).value;
-  const hours = parseFloat(document.getElementById(`hours${i}`).value) || 0;
+  const d = parseFloat(document.getElementById(`days${i}`).value) || 0;
+  const h = parseFloat(document.getElementById(`hours${i}`).value) || 0;
+  const m = parseFloat(document.getElementById(`mins${i}`).value) || 0;
+  const totalHours = timeToHours(d, h, m);
+
   const data = JSON.parse(localStorage.getItem(storageKey)) || [];
-  data[i] = { name, hours };
+  data[i] = { name, hours: totalHours };
   localStorage.setItem(storageKey, JSON.stringify(data));
   alert(`Builder ${i + 1} saved!`);
 }
 
 function startPotion() {
-  const m = parseFloat(document.getElementById("potionCount").value) || 1;
-  const totalDuration = m * 60 * 60 * 1000; // convert to milliseconds
+  const m = parseInt(document.getElementById("potionCount").value) || 1;
+  const totalDuration = hToMs(m); // 1 potion = 1 hour duration
   const endTime = Date.now() + totalDuration;
-  localStorage.setItem(boostKey, JSON.stringify({ endTime, m }));
+  localStorage.setItem(boostKey, JSON.stringify({ endTime }));
+  localStorage.setItem(lastUpdateKey, Date.now());
   updateBoostStatus();
 }
 
@@ -124,23 +155,18 @@ function updateBoostStatus() {
 
   const hoursLeft = (remaining / 3600000).toFixed(2);
   status.textContent = `Boost Active: 10× speed for ${hoursLeft}h remaining`;
-
-  // Apply boost effect gradually
-  applyRealTimeBoost(boost.m);
-
+  applyRealTimeBoost();
   requestAnimationFrame(updateBoostStatus);
 }
 
-function applyRealTimeBoost(m) {
-  // calculate time passed since last update and reduce builder hours
-  const lastUpdateKey = "lastUpdateTime";
+function applyRealTimeBoost() {
   const now = Date.now();
   const lastUpdate = parseFloat(localStorage.getItem(lastUpdateKey)) || now;
   const elapsedMs = now - lastUpdate;
   localStorage.setItem(lastUpdateKey, now);
 
-  const elapsedHours = elapsedMs / 3600000; // real hours passed
-  const acceleratedHours = elapsedHours * potionBoost; // 10x speed
+  const elapsedHours = msToH(elapsedMs);
+  const acceleratedHours = elapsedHours * potionBoost; // 10× progress
 
   const data = JSON.parse(localStorage.getItem(storageKey)) || [];
   let changed = false;
@@ -150,18 +176,32 @@ function applyRealTimeBoost(m) {
     let R = parseFloat(data[i].hours) || 0;
     if (R > 0) {
       R = Math.max(R - acceleratedHours, 0);
-      data[i].hours = R.toFixed(2);
+      data[i].hours = R;
       changed = true;
+      const t = hoursToTime(R);
+      const display = document.getElementById(`display${i}`);
+      if (display)
+        display.textContent = `Remaining: ${t.days}d ${t.hours}h ${t.mins}m`;
     }
   }
 
   if (changed) localStorage.setItem(storageKey, JSON.stringify(data));
-  if (changed) loadBuilders();
 }
 
 window.onload = () => {
   loadBuilders();
   updateBoostStatus();
+  setInterval(() => {
+    // update timers even if boost inactive
+    const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+    for (let i = 0; i < data.length; i++) {
+      const R = parseFloat(data[i]?.hours || 0);
+      const t = hoursToTime(R);
+      const display = document.getElementById(`display${i}`);
+      if (display)
+        display.textContent = `Remaining: ${t.days}d ${t.hours}h ${t.mins}m`;
+    }
+  }, 1000);
 };
 </script>
 </body>
