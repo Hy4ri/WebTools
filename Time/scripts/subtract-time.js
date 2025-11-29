@@ -1,3 +1,12 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+
+    document.getElementById('currentHours').value = hours;
+    document.getElementById('currentMinutes').value = minutes;
+});
+
 document.getElementById('subtractTimeForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
