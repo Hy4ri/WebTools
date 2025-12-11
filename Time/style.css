@@ -1,92 +1,97 @@
 * {
-    background-color: #121212;
-    color:#e2e2e2;
-
+  background-color: #121212;
+  color: #e2e2e2;
 }
-
 
 /*************  Home Page  *************/
 
-.title{
-    font-size: 60px;
-    font-weight: bolder;
-    text-align: center;
-    margin-top: 50px;
+.title {
+  font-size: 60px;
+  font-weight: bolder;
+  text-align: center;
+  margin-top: 50px;
 }
 
-p#homepage{
-    display: inline-block;
-    font-size: 30px;
-    font-weight: bold;
-    margin-left: 20%;
-    margin-right: 20%;
+p#homepage {
+  display: inline-block;
+  font-size: 30px;
+  font-weight: bold;
+  margin-left: 20%;
+  margin-right: 20%;
 }
 
-li#homepage{
-    font-size: 25px;
-    font-weight: bold;
-    margin-left: 20%;
-    margin-right: 20%;
-    margin-bottom: 10px;
+li#homepage {
+  font-size: 25px;
+  font-weight: bold;
+  margin-left: 20%;
+  margin-right: 20%;
+  margin-bottom: 10px;
 }
 
-a#homepage{
-    text-decoration: none;
-    color: #121212;
-    background-color: transparent;
+a#homepage {
+  text-decoration: none;
+  color: #121212;
+  background-color: transparent;
 }
 
-a#homepage:visited{
-    color: #121212;
-    background-color: transparent;
+a#homepage:visited {
+  color: #121212;
+  background-color: transparent;
 }
 
-.button1{
-    display: inline-block;
-    background-color: #e2e2e2;
-    color: #121212;
-    border: 2px solid green;
-    border-radius: 4px;
-    padding: 5px 12px 5px 12px;
-    box-shadow: #e2e2e2 1px 1px 3px 0px;
+.button1 {
+  display: inline-block;
+  background-color: #e2e2e2;
+  color: #121212;
+  border: 2px solid green;
+  border-radius: 4px;
+  padding: 5px 12px 5px 12px;
+  box-shadow: #e2e2e2 1px 1px 3px 0px;
 }
 
 /*************  Other Pages  *************/
 
 /* Result */
 
-label{
-    font-size: 30px;
-    font-weight: bold;
-    margin-left: 20%;
-    margin-right: 1%;
-    margin-bottom: 10px;
+label {
+  font-size: 30px;
+  font-weight: bold;
+  margin-left: 20%;
+  margin-right: 1%;
+  margin-bottom: 10px;
 }
 
-input{
-    background-color: #e2e2e2;
-    color: #121212;
+input {
+  background-color: #e2e2e2;
+  color: #121212;
 }
 
-button{
-    background-color: #e2e2e2;
-    color: #121212;
-    border: 2px solid green;
-    border-radius: 4px;
-    padding: 5px 12px 5px 12px;
-    box-shadow: #e2e2e2 1px 1px 3px 0px;
-    margin-left: 20%;
-    margin-right: 1%;
-    margin-top: 3%;
+button {
+  background-color: #e2e2e2;
+  color: #121212;
+  border: 2px solid green;
+  border-radius: 4px;
+  padding: 5px 12px 5px 12px;
+  box-shadow: #e2e2e2 1px 1px 3px 0px;
+  margin-left: 20%;
+  margin-right: 1%;
+  margin-top: 3%;
 }
 
-div#output{
-    font-size: 30px;
-    font-weight: bold;
-    margin-left: 20%;
-    margin-right: 1%;
-    margin-bottom: 10px;
+div#output {
+  font-size: 30px;
+  font-weight: bold;
+  margin-left: 20%;
+  margin-right: 1%;
+  margin-bottom: 10px;
 }
-#result{
-    font-size: 60px;
+#result {
+  font-size: 60px;
+  color: #990000;
+}
+
+/************* Pages Style  *************/
+#targetHours,
+#addHours {
+  margin-top: 5%;
 }
