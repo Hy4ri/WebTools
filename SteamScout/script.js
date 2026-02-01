@@ -161,6 +161,29 @@ function renderInputs(category) {
 
 const CACHE_DURATION = 3600000; // 1 Hour
 
+const PROXIES = [
+    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    url => `https://thingproxy.freeboard.io/fetch/${url}`,
+    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+];
+
+async function fetchWithFallback(targetUrl) {
+    let lastError = null;
+    for (const proxy of PROXIES) {
+        try {
+            const res = await fetch(proxy(targetUrl));
+            if (res.ok) return res;
+            console.warn(`Proxy failed: ${res.url} (${res.status})`);
+            lastError = new Error(`Status ${res.status}`);
+        } catch (e) {
+            console.warn(`Proxy error`, e);
+            lastError = e;
+        }
+    }
+    throw new Error(`All proxies failed. Last error: ${lastError?.message}`);
+}
+
 async function performSearch() {
     const itemName = buildItemName();
     if (!itemName) return showAlert('Please fill in all fields!');
@@ -187,12 +210,7 @@ async function performSearch() {
 
     try {
         const targetUrl = `https://steamcommunity.com/market/priceoverview/?appid=730&currency=1&market_hash_name=${encodeURIComponent(itemName)}`;
-        const steamUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
-
-        const response = await fetch(steamUrl);
-        if (!response.ok) {
-            throw new Error(`Steam API Error: ${response.status}`);
-        }
+        const response = await fetchWithFallback(targetUrl);
 
         const data = await response.json();
 
