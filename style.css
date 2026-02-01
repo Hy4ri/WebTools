@@ -1,28 +1,61 @@
-* {
-  background-color: #121212;
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0f0f0f;
   color: #e2e2e2;
+  font-family: 'Space Grotesk', sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
 h1 {
-  font-size: 100px;
-  font-weight: bold;
+  font-size: 5rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  background: linear-gradient(to right, #ffffff, #666666);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -2px;
 }
 
-p {
-  color: #990000;
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 400px;
 }
 
 a {
-  font-size: 50px;
+  display: block;
+  text-align: center;
+  font-size: 1.5rem;
   text-decoration: none;
-  font-weight: bold;
-  line-height: 1.5;
+  color: #888;
+  padding: 1rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 a:hover {
-  color: #990000;
+  color: #fff;
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
 }
 
-a:visited {
-  color: #e2e2e2;
+/* Specific hover colors for fun */
+a[href*="SteamScout"]:hover {
+  border-color: #00d2ff;
+  color: #00d2ff;
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
 }

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SteamScout | Premium CS2 Market Tracker</title>
+    <meta name="description" content="Track CS2 item prices with ease. Real-time Steam Community Market data with premium design and multi-currency support.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SteamScout</h1>
+            <p class="subtitle">Premium Counter-Strike 2 Market Intelligence</p>
+        </header>
+
+        <main class="main-card">
+            <div id="form-container">
+                <div class="form-group">
+                    <label for="category-select">Select Category</label>
+                    <select id="category-select">
+                        <option value="" disabled selected>Choose a category...</option>
+                        <option value="weapon">Weapon Skin</option>
+                        <option value="knife">Knife / Gloves</option>
+                        <option value="sticker">Sticker</option>
+                        <option value="music">Music Kit</option>
+                        <option value="graffiti">Graffiti</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div id="dynamic-inputs" class="inputs-grid">
+                    <!-- Dynamic fields will be injected here -->
+                </div>
+
+                <div class="actions">
+                    <button id="search-btn" class="btn-primary">
+                        <span>Search Market</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="loader" class="loader">
+                <div class="pulse"></div>
+                <p style="margin-top: 1rem; color: var(--text-secondary);">Querying Steam Market API...</p>
+            </div>
+
+            <div id="results" class="results-section">
+                <h2 id="item-title" style="margin-bottom: 1.5rem; text-align: center;"></h2>
+                <div class="price-grid">
+                    <div class="price-card">
+                        <div class="price-label">Lowest Price</div>
+                        <div id="price-low" class="price-value">--</div>
+                    </div>
+                    <div class="price-card">
+                        <div class="price-label">Median Price</div>
+                        <div id="price-median" class="price-value">--</div>
+                    </div>
+                    <div class="price-card">
+                        <div class="price-label">24h Volume</div>
+                        <div id="price-volume" class="price-value">--</div>
+                    </div>
+                </div>
+
+                <div class="toggle-wrapper">
+                    <span style="font-size: 0.9rem; color: var(--text-secondary);">USD</span>
+                    <label class="switch">
+                        <input type="checkbox" id="currency-toggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span style="font-size: 0.9rem; color: var(--text-secondary);">JOD</span>
+                </div>
+            </div>
+
+            <div class="history-section" id="history-container">
+                <p class="history-title">Recent Searches</p>
+                <div id="search-history" class="history-chips">
+                    <!-- Chips will be injected here -->
+                </div>
+            </div>
+        </main>
+        
+        <footer style="margin-top: 2rem; text-align: center; color: var(--text-secondary); font-size: 0.8rem;">
+            <p>&copy; 2024 SteamScout. Data provided by Steam Community Market.</p>
+            <p style="margin-top: 0.5rem; opacity: 0.6;">Note: If CORS errors occur, ensure your proxy is active or visit the Steam API locally.</p>
+        </footer>
+    </div>
+
+    <div id="alert-box"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
