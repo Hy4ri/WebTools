@@ -186,7 +186,8 @@ async function performSearch() {
     }
 
     try {
-        const steamUrl = `https://steamcommunity.com/market/priceoverview/?appid=730&currency=1&market_hash_name=${encodeURIComponent(itemName)}`;
+        const targetUrl = `https://steamcommunity.com/market/priceoverview/?appid=730&currency=1&market_hash_name=${encodeURIComponent(itemName)}`;
+        const steamUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
 
         const response = await fetch(steamUrl);
         if (!response.ok) {
