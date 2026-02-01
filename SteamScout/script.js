@@ -1,20 +1,3 @@
-const CATEGORIES = {
-    weapon: 'Weapon Skin',
-    knife: 'Knife / Gloves',
-    sticker: 'Sticker',
-    music: 'Music Kit',
-    graffiti: 'Graffiti',
-    other: 'Other'
-};
-
-const CONDITIONS = [
-    "Factory New",
-    "Minimal Wear",
-    "Field-Tested",
-    "Well-Worn",
-    "Battle-Scarred"
-];
-
 const state = {
     currentCategory: '',
     currentData: null,
@@ -36,8 +19,18 @@ const currencyToggle = document.getElementById('currency-toggle');
 const historyChips = document.getElementById('search-history');
 const alertBox = document.getElementById('alert-box');
 
+
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
+    // Populate Categories dynamically
+    categorySelect.innerHTML = '<option value="" disabled selected>Select Category</option>';
+    for (const [key, label] of Object.entries(CATEGORIES)) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = label;
+        categorySelect.appendChild(option);
+    }
+
     renderHistory();
 
     categorySelect.addEventListener('change', (e) => {
@@ -52,80 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDisplay();
     });
 });
-
-const WEAPONS = [
-    "AK-47", "M4A4", "M4A1-S", "AWP", "Glock-18", "USP-S", "Desert Eagle",
-    "Galil AR", "Famas", "SSG 08", "SG 553", "AUG", "MAC-10", "MP9",
-    "MP7", "MP5-SD", "UMP-45", "P90", "PP-Bizon", "P250", "Five-SeveN",
-    "Tec-9", "CZ75-Auto", "P2000", "Dual Berettas", "R8 Revolver",
-    "Nova", "XM1014", "MAG-7", "Sawed-Off", "Negev", "M249", "SCAR-20", "G3SG1"
-].sort();
-
-const KNIVES = [
-    "Karambit", "Butterfly Knife", "M9 Bayonet", "Bayonet", "Skeleton Knife",
-    "Nomad Knife", "Paracord Knife", "Survival Knife", "Ursus Knife",
-    "Navaja Knife", "Stiletto Knife", "Talon Knife", "Classic Knife",
-    "Bowie Knife", "Huntsman Knife", "Falchion Knife", "Shadow Daggers",
-].sort();
-
-const GLOVES = [
-    "Bloodhound Gloves", "Driver Gloves", "Hand Wraps", "Moto Gloves",
-    "Specialist Gloves", "Sport Gloves", "Hydra Gloves", "Broken Fang Gloves"
-].sort();
-
-const STICKERS = [
-    "Titan (Holo) | Katowice 2014", "iBUYPOWER (Holo) | Katowice 2014",
-    "Howling Dawn", "Crown (Foil)", "King on the Field", "Harp of War (Holo)",
-    "Winged Defuser", "Flammable (Foil)", "Swag (Foil)", "Sheriff (Foil)",
-    "Reason Gaming (Holo) | Katowice 2014", "Vox Eminor (Holo) | Katowice 2014",
-    "Team Dignitas (Holo) | Katowice 2014", "Natus Vincere (Holo) | Katowice 2014",
-    "Team Liquid (Holo) | Atlanta 2017", "Cloud9 (Holo) | DreamHack 2014",
-    "Tyloo (Holo) | Boston 2018", "Dragon Lore (Foil)", "Gold Web (Foil)"
-].sort();
-
-const MUSIC_KITS = [
-    "Music Kit | The Verkkars, EZ4ENCE", "Music Kit | Scarlxrd, King, Scar",
-    "Music Kit | Denzel Curry, ULTIMATE", "Music Kit | Amon Tobin, All for Dust",
-    "Music Kit | AWOLNATION, I Am", "Music Kit | Beartooth, Aggressive",
-    "Music Kit | Blitz Kids, The Good Youth", "Music Kit | Darude, Moments CSGO",
-    "Music Kit | Neck Deep, The Lowlife", "Music Kit | Scarlxrd, CHAIN$AW.LXADXUT",
-    "Music Kit | Sullivan King, Lock Me Up", "Music Kit | Tacticians, Tacticians",
-    "Music Kit | High Noon", "Music Kit | Mord Fustang, Diamonds"
-].sort();
-
-const GRAFFITI = [
-    "Graffiti | Clutch King (Violent Violet)", "Graffiti | EZ (Monarch Blue)",
-    "Graffiti | Loser (Dust Brown)", "Graffiti | Welcome to the Clutch (War Pig Pink)",
-    "Graffiti | 8-Ball (Cocoa Brown)", "Graffiti | Backstab (Monster Purple)",
-    "Graffiti | Recoil (Cyan)"
-].sort();
-
-const OTHER_ITEMS = [
-    "Recoil Case", "Dreams & Nightmares Case", "Revolution Case", "Fracture Case",
-    "Clutch Case", "Snakebite Case", "Danger Zone Case", "Prisma 2 Case",
-    "CS20 Case", "Operation Broken Fang Case", "Operation Riptide Case",
-    "Kilowatt Case", "Name Tag", "Description Tag"
-].sort();
-
-// Specific mappings for popular weapons to provide "Based on weapon" experience
-const WEAPON_SKINS = {
-    "AK-47": ["Slate", "Redline", "Asiimov", "Vulcan", "Case Hardened", "Fire Serpent", "Wild Lotus", "Gold Arabesque", "Bloodsport", "Neon Rider", "Nightwish", "Head Shot", "Legion of Anubis", "Aquamarine Revenge", "Fuel Injector", "Jaguar", "Hydroponic", "Jet Set", "First Class", "Cartel", "Wasteland Rebel", "Frontside Misty", "Point Disarray"],
-    "M4A4": ["Howl", "Asiimov", "Neo-Noir", "Desolate Space", "Hellfire", "Dragon King", "Poseidon", "Daybreak", "Royal Paladin", "The Emperor", "In Living Color", "Temukau", "Spider Lily", "Coalition", "Cyber Security", "Buzz Kill", "X-Ray", "Griffin", "Zirka"],
-    "M4A1-S": ["Printstream", "Blue Phosphor", "Welcome to the Jungle", "Imminent Danger", "Knight", "Hot Rod", "Icarus Fell", "Hyper Beast", "Golden Coil", "Chantico's Fire", "Mecha Industries", "Decimator", "Nightmare", "Player Two", "Primal Saber", "Leaded Glass", "Cyrex", "Atomic Alloy", "Dark Water", "Nitro", "Guardian", "Basilisk"],
-    "AWP": ["Dragon Lore", "Gungnir", "The Prince", "Desert Hydra", "Medusa", "Fade", "Lightning Strike", "Oni Taiji", "Asiimov", "Neo-Noir", "Wildfire", "Containment Breach", "Hyper Beast", "Redline", "Electric Hive", "Graphite", "Boom", "Corticoera", "Man-o'-war", "Sun in Leo", "Pink DDPAT", "Atheris", "Mortis", "Exoskeleton", "Worm God"],
-    "USP-S": ["Kill Confirmed", "The Traitor", "Printstream", "Neo-Noir", "Cortex", "Monster Mashup", "Orion", "Serum", "Blueprint", "Stainless", "Guardian", "Cyrex", "Road Rash", "Overgrowth", "Dark Water"],
-    "Glock-18": ["Fade", "Twilight Galaxy", "Gamma Doppler", "Vogue", "Bullet Queen", "Neo-Noir", "Snack Attack", "Water Elemental", "Wasteland Rebel", "Franklin", "Dragon Tattoo", "Royal Legion", "Grinder", "Steel Disruption", "Ironwork", "Bunsen Burner", "Reactor", "Nuclear Garden"],
-    "Desert Eagle": ["Blaze", "Fennec Fox", "Printstream", "Ocean Drive", "Emerald Jörmungandr", "Sunset Storm 🤩", "Hand Cannon", "Golden Koi", "Code Red", "Kumicho Dragon", "Mecha Industries", "Conspiracy", "Cobalt Disruption", "Hypnotic", "Midnight Storm", "Crimson Web"]
-};
-
-// Fallback for everything else
-const GENERIC_SKINS = [
-    "Asiimov", "Redline", "Printstream", "Neo-Noir", "Hyper Beast", "Fade",
-    "Doppler", "Gamma Doppler", "Tiger Tooth", "Marble Fade", "Case Hardened",
-    "Crimson Web", "Slaughter", "Lore", "Autotronic", "Freehand", "Blue Steel",
-    "Damascus Steel", "Stained", "Rust Coat", "Ultraviolet", "Night",
-    "Forest DDPAT", "Boreal Forest", "Scorched", "Safari Mesh", "Urban Masked"
-].sort();
 
 function renderInputs(category) {
     dynamicInputs.innerHTML = '';
@@ -189,23 +108,37 @@ function renderInputs(category) {
         `;
         setupAutocomplete('input-name', 'list-sticker', STICKERS);
 
-    } else if (['music', 'graffiti', 'other'].includes(category)) {
+    } else if (['music', 'graffiti', 'container', 'tool', 'agent'].includes(category)) {
         let options = [];
         let label = 'Full Item Name';
         let placeholder = 'Type to search...';
 
-        if (category === 'music') {
-            options = MUSIC_KITS;
-            label = 'Music Kit';
-            placeholder = 'Search Music Kits...';
-        } else if (category === 'graffiti') {
-            options = GRAFFITI;
-            label = 'Graffiti Pattern';
-            placeholder = 'Search Graffiti...';
-        } else {
-            options = OTHER_ITEMS;
-            label = 'Item Name';
-            placeholder = 'Search Items...';
+        switch (category) {
+            case 'music':
+                options = MUSIC_KITS;
+                label = 'Music Kit';
+                placeholder = 'Search Music Kits...';
+                break;
+            case 'graffiti':
+                options = GRAFFITI;
+                label = 'Graffiti Pattern';
+                placeholder = 'Search Graffiti...';
+                break;
+            case 'container':
+                options = CONTAINERS;
+                label = 'Case / Capsule Name';
+                placeholder = 'Search Cases...';
+                break;
+            case 'tool':
+                options = TOOLS;
+                label = 'Tool / Tag Name';
+                placeholder = 'Search Tools...';
+                break;
+            case 'agent':
+                options = AGENTS;
+                label = 'Agent Name';
+                placeholder = 'Search Agents...';
+                break;
         }
 
         dynamicInputs.innerHTML = `
@@ -252,55 +185,35 @@ async function performSearch() {
         }
     }
 
-    // Different proxies to try
-    const proxies = [
-        url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-        url => `https://thingproxy.freeboard.io/fetch/${url}`,
-        url => `https://cors-anywhere.herokuapp.com/${url}`
-    ];
+    try {
+        const steamUrl = `https://steamcommunity.com/market/priceoverview/?appid=730&currency=1&market_hash_name=${encodeURIComponent(itemName)}`;
 
-    let success = false;
-    let lastError = '';
-
-    for (const proxyFn of proxies) {
-        try {
-            const steamUrl = `https://steamcommunity.com/market/priceoverview/?appid=730&currency=1&market_hash_name=${encodeURIComponent(itemName)}`;
-            const proxiedUrl = proxyFn(steamUrl);
-
-            const response = await fetch(proxiedUrl);
-            if (!response.ok) {
-                if (response.status === 403) throw new Error('Proxy blocked (403)');
-                throw new Error(`Proxy error (${response.status})`);
-            }
-
-            const data = await response.json();
-
-            if (data.success === false || (!data.lowest_price && !data.median_price)) {
-                throw new Error('Item not found on Steam!');
-            }
-
-            // Save to Cache
-            localStorage.setItem(cacheKey, JSON.stringify({
-                timestamp: Date.now(),
-                data: data
-            }));
-
-            handleSuccess(data, itemName);
-            success = true;
-            break;
-
-        } catch (err) {
-            console.warn(`Proxy failed:`, err);
-            lastError = err.message;
-            continue;
+        const response = await fetch(steamUrl);
+        if (!response.ok) {
+            throw new Error(`Steam API Error: ${response.status}`);
         }
-    }
 
-    if (!success) {
-        showAlert(lastError || 'All proxies failed. Steam may be rate-limiting requests.');
+        const data = await response.json();
+
+        if (data.success === false || (!data.lowest_price && !data.median_price)) {
+            throw new Error('Item not found on Steam!');
+        }
+
+        // Save to Cache
+        localStorage.setItem(cacheKey, JSON.stringify({
+            timestamp: Date.now(),
+            data: data
+        }));
+
+        handleSuccess(data, itemName);
+
+    } catch (err) {
+        console.warn(`Fetch failed:`, err);
+        showAlert(err.message || 'Failed to fetch price data.');
     }
     showLoader(false);
 }
+
 
 function handleSuccess(data, itemName) {
     state.currentData = data;
