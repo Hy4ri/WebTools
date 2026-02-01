@@ -1,97 +1,118 @@
-* {
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+body {
   background-color: #121212;
+  color: #e2e2e2;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 3rem;
+  margin-bottom: 2rem;
   color: #e2e2e2;
 }
 
-/*************  Home Page  *************/
-
-.title {
-  font-size: 60px;
-  font-weight: bolder;
+#homepage {
+  font-size: 1.2rem;
+  margin: 1rem 0;
   text-align: center;
-  margin-top: 50px;
+  list-style: none;
+  /* Remove bullets if applied to li */
 }
 
-p#homepage {
-  display: inline-block;
-  font-size: 30px;
-  font-weight: bold;
-  margin-left: 20%;
-  margin-right: 20%;
-}
-
-li#homepage {
-  font-size: 25px;
-  font-weight: bold;
-  margin-left: 20%;
-  margin-right: 20%;
-  margin-bottom: 10px;
-}
-
-a#homepage {
+a {
   text-decoration: none;
-  color: #121212;
-  background-color: transparent;
-}
-
-a#homepage:visited {
-  color: #121212;
-  background-color: transparent;
+  color: #e2e2e2;
 }
 
 .button1 {
   display: inline-block;
-  background-color: #e2e2e2;
-  color: #121212;
-  border: 2px solid green;
+  background-color: #990000;
+  color: #e2e2e2;
+  border: none;
   border-radius: 4px;
-  padding: 5px 12px 5px 12px;
-  box-shadow: #e2e2e2 1px 1px 3px 0px;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-decoration: none;
 }
 
-/*************  Other Pages  *************/
+.button1:hover {
+  background-color: #cc0000;
+}
 
-/* Result */
+/* Other Pages */
 
 label {
-  font-size: 30px;
-  font-weight: bold;
-  margin-left: 20%;
-  margin-right: 1%;
-  margin-bottom: 10px;
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
 }
 
 input {
-  background-color: #e2e2e2;
-  color: #121212;
+  background-color: #252525;
+  border: 1px solid #444;
+  color: #e2e2e2;
+  padding: 0.8rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+  max-width: 250px;
+  text-align: center;
+  display: block;
+  margin: 0 auto 1.5rem auto;
+}
+
+input:focus {
+  outline: none;
+  border-color: #990000;
 }
 
 button {
-  background-color: #e2e2e2;
-  color: #121212;
-  border: 2px solid green;
+  background-color: #990000;
+  color: #e2e2e2;
+  border: none;
   border-radius: 4px;
-  padding: 5px 12px 5px 12px;
-  box-shadow: #e2e2e2 1px 1px 3px 0px;
-  margin-left: 20%;
-  margin-right: 1%;
-  margin-top: 3%;
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  display: block;
+  margin: 1rem auto;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #cc0000;
 }
 
 div#output {
-  font-size: 30px;
+  font-size: 1.5rem;
   font-weight: bold;
-  margin-left: 20%;
-  margin-right: 1%;
-  margin-bottom: 10px;
-}
-#result {
-  font-size: 60px;
-  color: #990000;
+  text-align: center;
+  margin-top: 2rem;
 }
 
-/************* Pages Style  *************/
+#result {
+  font-size: 3rem;
+  color: #e2e2e2;
+  /* Changed from red to neutral to fit theme, logic sets text */
+  display: block;
+  margin-top: 1rem;
+}
+
+/* Layout helpers */
 #targetHours,
 #addHours {
-  margin-top: 5%;
+  margin-top: 2rem;
+  text-align: center;
 }

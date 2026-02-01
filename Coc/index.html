@@ -1,81 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CoC Builder Tracker</title>
-<style>
-  body { font-family: system-ui, sans-serif; background: #121212; color: #f2f2f2; padding: 2rem; max-width: 700px; margin: auto; }
-  h1 { text-align: center; color: #990000; }
-  .builder { background: #1e1e1e; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 0 8px rgba(0,0,0,0.6); }
-  label { display: block; margin: .3rem 0; }
-  input { width: 32%; padding: .4rem; margin-right: .3rem; border: none; border-radius: .5rem; background: #222; color: #f2f2f2; text-align: center; }
-  button { background: #990000; color: white; border: none; padding: .6rem 1rem; border-radius: .5rem; cursor: pointer; transition: background 0.2s; }
-  button:hover { background: #660000; }
-  #potions { margin: 1rem 0; text-align: center; }
-  #boost-status { text-align: center; margin-top: 1rem; color: #d2d2d2; }
-  .time-display { margin-top: .5rem; color: #aaa; font-size: 0.9rem; }
-  #notifications {
-    position: fixed;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: 90%;
-    z-index: 1000;
-  }
-  .popup {
-    background: #990000;
-    color: #f2f2f2;
-    padding: .8rem 1rem;
-    margin: .3rem 0;
-    border-radius: .5rem;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .popup:hover { background: #660000; }
-  .warning { background: #ff9900; color: #121212; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoC Builder Tracker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #121212;
+      color: #e2e2e2;
+      padding: 2rem;
+      max-width: 700px;
+      margin: auto;
+      line-height: 1.5;
+    }
+
+    h1 {
+      text-align: center;
+      color: #e2e2e2;
+      margin-bottom: 2rem;
+    }
+
+    .builder {
+      background: #1e1e1e;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #333;
+    }
+
+    label {
+      display: block;
+      margin: .5rem 0 .2rem 0;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    input {
+      width: 32%;
+      padding: .6rem;
+      margin-right: .3rem;
+      border: 1px solid #444;
+      border-radius: 4px;
+      background: #252525;
+      color: #e2e2e2;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #990000;
+    }
+
+    /* Make name input full width */
+    input[type="text"] {
+      width: 100%;
+      margin-right: 0;
+      text-align: left;
+    }
+
+    button {
+      background: #990000;
+      color: #e2e2e2;
+      border: none;
+      padding: .8rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
+
+    button:hover {
+      background: #cc0000;
+    }
+
+    #potions {
+      margin: 2rem 0;
+      text-align: center;
+      padding: 1.5rem;
+      background: #1e1e1e;
+      border-radius: 8px;
+      border: 1px solid #333;
+    }
+
+    #boost-status {
+      text-align: center;
+      margin-top: 1rem;
+      color: #990000;
+      font-weight: bold;
+    }
+
+    .time-display {
+      margin-top: 1rem;
+      color: #888;
+      font-size: 0.9rem;
+      border-top: 1px solid #333;
+      padding-top: 0.5rem;
+    }
+
+    #notifications {
+      position: fixed;
+      bottom: 20px;
+      /* Changed from top to bottom for consistency */
+      right: 20px;
+      left: auto;
+      transform: none;
+      max-width: 300px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .popup {
+      background: #333;
+      color: #e2e2e2;
+      padding: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      border-left: 4px solid #990000;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .warning {
+      border-left-color: #ff9900;
+    }
+
+    @media (max-width: 450px) {
+      div>input {
+        width: 100% !important;
+        margin-bottom: 0.5rem;
+        margin-right: 0;
+      }
+
+      input {
+        width: 100%;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
+
 <body>
-<h1>Clash of Clans Builder Tracker</h1>
+  <h1>Clash of Clans Builder Tracker</h1>
 
-<div id="notifications"></div>
+  <div id="notifications"></div>
 
-<div id="builders"></div>
+  <div id="builders"></div>
 
-<div id="potions">
-  <label>Active Boost Duration:</label>
-  <input type="number" id="boostHours" min="0" placeholder="Hours" value="0">
-  <input type="number" id="boostMinutes" min="0" max="59" placeholder="Minutes" value="60">
-  <button onclick="startBoost()">Activate Boost</button>
-</div>
+  <div id="potions">
+    <label>Active Boost Duration:</label>
+    <input type="number" id="boostHours" min="0" placeholder="Hours" value="0">
+    <input type="number" id="boostMinutes" min="0" max="59" placeholder="Minutes" value="60">
+    <button onclick="startBoost()">Activate Boost</button>
+  </div>
 
-<div id="boost-status">No active boost</div>
+  <div id="boost-status">No active boost</div>
 
-<script>
-const builderCount = 6;
-const potionBoost = 10; // 10x faster
-const storageKey = "builderTrackerData";
-const boostKey = "activeBoost";
+  <script>
+    const builderCount = 6;
+    const potionBoost = 10; // 10x faster
+    const storageKey = "builderTrackerData";
+    const boostKey = "activeBoost";
 
-function showPopup(message, type = "popup") {
-  const container = document.getElementById("notifications");
-  const div = document.createElement("div");
-  div.className = type;
-  div.textContent = message;
-  div.onclick = () => div.remove(); // click to dismiss
-  container.appendChild(div);
-}
+    function showPopup(message, type = "popup") {
+      const container = document.getElementById("notifications");
+      const div = document.createElement("div");
+      div.className = type;
+      div.textContent = message;
+      div.onclick = () => div.remove(); // click to dismiss
+      container.appendChild(div);
+    }
 
-function loadBuilders() {
-  const data = JSON.parse(localStorage.getItem(storageKey)) || [];
-  const container = document.getElementById("builders");
-  container.innerHTML = "";
-  for (let i = 0; i < builderCount; i++) {
-    const b = data[i] || { name: "", totalHours: 0, remaining: 0, notified: false };
-    const div = document.createElement("div");
-    div.className = "builder";
-    div.innerHTML = `
+    function loadBuilders() {
+      const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+      const container = document.getElementById("builders");
+      container.innerHTML = "";
+      for (let i = 0; i < builderCount; i++) {
+        const b = data[i] || { name: "", totalHours: 0, remaining: 0, notified: false };
+        const div = document.createElement("div");
+        div.className = "builder";
+        div.innerHTML = `
       <h3>Builder ${i + 1}</h3>
       <label>Project Name:</label>
       <input type="text" id="name${i}" value="${b.name}">
@@ -91,145 +213,146 @@ function loadBuilders() {
         Boosted Time: ${formatTime(calcBoostedTime(b.remaining || 0))}
       </div>
     `;
-    container.appendChild(div);
-  }
-}
-
-function saveBuilder(i) {
-  const name = document.getElementById(`name${i}`).value;
-  const days = parseFloat(document.getElementById(`days${i}`).value) || 0;
-  const hours = parseFloat(document.getElementById(`hours${i}`).value) || 0;
-  const minutes = parseFloat(document.getElementById(`minutes${i}`).value) || 0;
-  const totalHours = days * 24 + hours + minutes / 60;
-  const data = JSON.parse(localStorage.getItem(storageKey)) || [];
-  data[i] = { name, totalHours, remaining: totalHours, notified: false };
-  localStorage.setItem(storageKey, JSON.stringify(data));
-  loadBuilders();
-  checkBoostSufficiency();
-}
-
-function formatTime(hours) {
-  const totalSeconds = Math.floor(hours * 3600);
-  const d = Math.floor(totalSeconds / 86400);
-  const h = Math.floor((totalSeconds % 86400) / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
-  return `${d}d ${h}h ${m}m ${s}s`;
-}
-
-function calcBoostedTime(hours) {
-  const boost = JSON.parse(localStorage.getItem(boostKey));
-  if (!boost) return hours;
-  return hours / potionBoost;
-}
-
-function startBoost() {
-  const hours = parseFloat(document.getElementById("boostHours").value) || 0;
-  const minutes = parseFloat(document.getElementById("boostMinutes").value) || 0;
-  const duration = (hours + minutes / 60) * 3600000;
-  if (duration <= 0) { showPopup("Enter a valid boost duration!", "warning"); return; }
-  const endTime = Date.now() + duration;
-  localStorage.setItem(boostKey, JSON.stringify({ endTime, notified: false }));
-  updateBoostStatus();
-  checkBoostSufficiency();
-}
-
-function updateBoostStatus() {
-  const boost = JSON.parse(localStorage.getItem(boostKey));
-  const status = document.getElementById("boost-status");
-  if (!boost) {
-    status.textContent = "No active boost";
-    return;
-  }
-
-  const remainingMs = boost.endTime - Date.now();
-  if (remainingMs <= 0) {
-    localStorage.removeItem(boostKey);
-    if (!boost.notified) {
-      showPopup("Your boost has ended!", "popup");
-    }
-    status.textContent = "Boost expired";
-    return;
-  }
-
-  const totalSeconds = Math.floor(remainingMs / 1000);
-  const d = Math.floor(totalSeconds / 86400);
-  const h = Math.floor((totalSeconds % 86400) / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
-
-  status.textContent = `Boost Active: 10× speed for ${d}d ${h}h ${m}m ${s}s remaining`;
-
-  applyRealTimeBoost();
-  requestAnimationFrame(updateBoostStatus);
-}
-
-function applyRealTimeBoost() {
-  const boost = JSON.parse(localStorage.getItem(boostKey));
-  const now = Date.now();
-  const lastUpdateKey = "lastUpdateTime";
-  const lastUpdate = parseFloat(localStorage.getItem(lastUpdateKey)) || now;
-  const elapsedMs = now - lastUpdate;
-  localStorage.setItem(lastUpdateKey, now);
-
-  const elapsedHours = elapsedMs / 3600000;
-  const accelerated = boost ? elapsedHours * potionBoost : elapsedHours;
-
-  const data = JSON.parse(localStorage.getItem(storageKey)) || [];
-  let changed = false;
-
-  for (let i = 0; i < data.length; i++) {
-    if (!data[i]) continue;
-    let R = parseFloat(data[i].remaining) || 0;
-    if (R > 0) {
-      const newR = Math.max(R - accelerated, 0);
-      if (newR === 0 && !data[i].notified) {
-        showPopup(`${data[i].name || `Builder ${i + 1}`} has finished!`, "popup");
-        data[i].notified = true;
+        container.appendChild(div);
       }
-      data[i].remaining = newR;
-      changed = true;
     }
-  }
 
-  if (changed) {
-    localStorage.setItem(storageKey, JSON.stringify(data));
-    refreshRemainingDisplay(data);
-  }
-}
+    function saveBuilder(i) {
+      const name = document.getElementById(`name${i}`).value;
+      const days = parseFloat(document.getElementById(`days${i}`).value) || 0;
+      const hours = parseFloat(document.getElementById(`hours${i}`).value) || 0;
+      const minutes = parseFloat(document.getElementById(`minutes${i}`).value) || 0;
+      const totalHours = days * 24 + hours + minutes / 60;
+      const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+      data[i] = { name, totalHours, remaining: totalHours, notified: false };
+      localStorage.setItem(storageKey, JSON.stringify(data));
+      loadBuilders();
+      checkBoostSufficiency();
+    }
 
-function refreshRemainingDisplay(data) {
-  for (let i = 0; i < data.length; i++) {
-    const div = document.getElementById(`remaining${i}`);
-    if (!div || !data[i]) continue;
-    div.innerHTML = `
+    function formatTime(hours) {
+      const totalSeconds = Math.floor(hours * 3600);
+      const d = Math.floor(totalSeconds / 86400);
+      const h = Math.floor((totalSeconds % 86400) / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+      return `${d}d ${h}h ${m}m ${s}s`;
+    }
+
+    function calcBoostedTime(hours) {
+      const boost = JSON.parse(localStorage.getItem(boostKey));
+      if (!boost) return hours;
+      return hours / potionBoost;
+    }
+
+    function startBoost() {
+      const hours = parseFloat(document.getElementById("boostHours").value) || 0;
+      const minutes = parseFloat(document.getElementById("boostMinutes").value) || 0;
+      const duration = (hours + minutes / 60) * 3600000;
+      if (duration <= 0) { showPopup("Enter a valid boost duration!", "warning"); return; }
+      const endTime = Date.now() + duration;
+      localStorage.setItem(boostKey, JSON.stringify({ endTime, notified: false }));
+      updateBoostStatus();
+      checkBoostSufficiency();
+    }
+
+    function updateBoostStatus() {
+      const boost = JSON.parse(localStorage.getItem(boostKey));
+      const status = document.getElementById("boost-status");
+      if (!boost) {
+        status.textContent = "No active boost";
+        return;
+      }
+
+      const remainingMs = boost.endTime - Date.now();
+      if (remainingMs <= 0) {
+        localStorage.removeItem(boostKey);
+        if (!boost.notified) {
+          showPopup("Your boost has ended!", "popup");
+        }
+        status.textContent = "Boost expired";
+        return;
+      }
+
+      const totalSeconds = Math.floor(remainingMs / 1000);
+      const d = Math.floor(totalSeconds / 86400);
+      const h = Math.floor((totalSeconds % 86400) / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+
+      status.textContent = `Boost Active: 10× speed for ${d}d ${h}h ${m}m ${s}s remaining`;
+
+      applyRealTimeBoost();
+      requestAnimationFrame(updateBoostStatus);
+    }
+
+    function applyRealTimeBoost() {
+      const boost = JSON.parse(localStorage.getItem(boostKey));
+      const now = Date.now();
+      const lastUpdateKey = "lastUpdateTime";
+      const lastUpdate = parseFloat(localStorage.getItem(lastUpdateKey)) || now;
+      const elapsedMs = now - lastUpdate;
+      localStorage.setItem(lastUpdateKey, now);
+
+      const elapsedHours = elapsedMs / 3600000;
+      const accelerated = boost ? elapsedHours * potionBoost : elapsedHours;
+
+      const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+      let changed = false;
+
+      for (let i = 0; i < data.length; i++) {
+        if (!data[i]) continue;
+        let R = parseFloat(data[i].remaining) || 0;
+        if (R > 0) {
+          const newR = Math.max(R - accelerated, 0);
+          if (newR === 0 && !data[i].notified) {
+            showPopup(`${data[i].name || `Builder ${i + 1}`} has finished!`, "popup");
+            data[i].notified = true;
+          }
+          data[i].remaining = newR;
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        localStorage.setItem(storageKey, JSON.stringify(data));
+        refreshRemainingDisplay(data);
+      }
+    }
+
+    function refreshRemainingDisplay(data) {
+      for (let i = 0; i < data.length; i++) {
+        const div = document.getElementById(`remaining${i}`);
+        if (!div || !data[i]) continue;
+        div.innerHTML = `
       Remaining: ${formatTime(data[i].remaining || 0)}<br>
       Boosted Time: ${formatTime(calcBoostedTime(data[i].remaining || 0))}
     `;
-  }
-}
-
-function checkBoostSufficiency() {
-  const boost = JSON.parse(localStorage.getItem(boostKey));
-  if (!boost) return;
-
-  const remainingBoostHours = (boost.endTime - Date.now()) / 3600000;
-  const data = JSON.parse(localStorage.getItem(storageKey)) || [];
-
-  for (let i = 0; i < data.length; i++) {
-    if (!data[i]) continue;
-    const boostedTimeNeeded = data[i].remaining / potionBoost;
-    if (boostedTimeNeeded > remainingBoostHours) {
-      showPopup(`${data[i].name || `Builder ${i + 1}`} won't finish with current boost!`, "warning");
+      }
     }
-  }
-}
 
-window.onload = () => {
-  loadBuilders();
-  updateBoostStatus();
-  setInterval(applyRealTimeBoost, 1000);
-};
-</script>
+    function checkBoostSufficiency() {
+      const boost = JSON.parse(localStorage.getItem(boostKey));
+      if (!boost) return;
+
+      const remainingBoostHours = (boost.endTime - Date.now()) / 3600000;
+      const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+      for (let i = 0; i < data.length; i++) {
+        if (!data[i]) continue;
+        const boostedTimeNeeded = data[i].remaining / potionBoost;
+        if (boostedTimeNeeded > remainingBoostHours) {
+          showPopup(`${data[i].name || `Builder ${i + 1}`} won't finish with current boost!`, "warning");
+        }
+      }
+    }
+
+    window.onload = () => {
+      loadBuilders();
+      updateBoostStatus();
+      setInterval(applyRealTimeBoost, 1000);
+    };
+  </script>
 </body>
+
 </html>

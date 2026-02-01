@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SteamScout | Premium CS2 Market Tracker</title>
-    <meta name="description" content="Track CS2 item prices with ease. Real-time Steam Community Market data with premium design and multi-currency support.">
+    <meta name="description"
+        content="Track CS2 item prices with ease. Real-time Steam Community Market data with premium design and multi-currency support.">
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -43,7 +47,7 @@
 
             <div id="loader" class="loader">
                 <div class="pulse"></div>
-                <p style="margin-top: 1rem; color: var(--text-secondary);">Querying Steam Market API...</p>
+                <p style="margin-top: 1rem; color: #888;">Querying Steam Market API...</p>
             </div>
 
             <div id="results" class="results-section">
@@ -64,12 +68,12 @@
                 </div>
 
                 <div class="toggle-wrapper">
-                    <span style="font-size: 0.9rem; color: var(--text-secondary);">USD</span>
+                    <span style="font-size: 0.9rem; color: #888;">USD</span>
                     <label class="switch">
                         <input type="checkbox" id="currency-toggle">
                         <span class="slider"></span>
                     </label>
-                    <span style="font-size: 0.9rem; color: var(--text-secondary);">JOD</span>
+                    <span style="font-size: 0.9rem; color: #888;">JOD</span>
                 </div>
             </div>
 
@@ -80,10 +84,11 @@
                 </div>
             </div>
         </main>
-        
-        <footer style="margin-top: 2rem; text-align: center; color: var(--text-secondary); font-size: 0.8rem;">
+
+        <footer style="margin-top: 2rem; text-align: center; color: #888; font-size: 0.8rem;">
             <p>&copy; 2024 SteamScout. Data provided by Steam Community Market.</p>
-            <p style="margin-top: 0.5rem; opacity: 0.6;">Note: If CORS errors occur, ensure your proxy is active or visit the Steam API locally.</p>
+            <p style="margin-top: 0.5rem; opacity: 0.6;">Note: If CORS errors occur, ensure your proxy is active or
+                visit the Steam API locally.</p>
         </footer>
     </div>
 
@@ -91,4 +96,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
