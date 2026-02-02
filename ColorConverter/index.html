@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Converter</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: #e2e2e2;
+        }
+
+        .converter-card {
+            background: #1e1e1e;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: #e2e2e2;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .color-display {
+            width: 100%;
+            height: 150px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            margin-bottom: 2rem;
+            background-color: #FFFFFF;
+            /* Default color */
+            transition: background-color 0.2s;
+            position: relative;
+        }
+
+        .color-picker-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #aaa;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 0.8rem;
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #e2e2e2;
+            font-size: 1rem;
+            text-align: center;
+            font-family: monospace;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #990000;
+        }
+
+        /* Hide number arrows */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 2rem;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: #e2e2e2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="converter-card">
+        <h1>Color Converter</h1>
+
+        <div class="color-display" id="color-display">
+            <input type="color" id="native-picker" class="color-picker-input" value="#FFFFFF">
+        </div>
+
+        <div class="input-group">
+            <label>HEX</label>
+            <input type="text" id="hex-input" placeholder="#FFFFFF" maxlength="7">
+        </div>
+
+        <div class="input-group">
+            <label>RGB</label>
+            <div class="input-row">
+                <input type="number" id="rgb-r" placeholder="R" min="0" max="255">
+                <input type="number" id="rgb-g" placeholder="G" min="0" max="255">
+                <input type="number" id="rgb-b" placeholder="B" min="0" max="255">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>HSL</label>
+            <div class="input-row">
+                <input type="number" id="hsl-h" placeholder="H" min="0" max="360">
+                <input type="number" id="hsl-s" placeholder="S%" min="0" max="100">
+                <input type="number" id="hsl-l" placeholder="L%" min="0" max="100">
+            </div>
+        </div>
+
+        <a href="../index.html" class="back-link">Back to Menu</a>
+    </div>
+
+    <script type="module" src="script.ts"></script>
+</body>
+
+</html>

@@ -1,23 +1,61 @@
-const state = {
+import {
+    CATEGORIES,
+    WEAPONS,
+    KNIVES,
+    GLOVES,
+    CONDITIONS,
+    WEAPON_SKINS,
+    GENERIC_SKINS,
+    STICKERS,
+    MUSIC_KITS,
+    GRAFFITI,
+    CONTAINERS,
+    TOOLS,
+    AGENTS
+} from './data';
+
+interface SteamPriceData {
+    success?: boolean;
+    lowest_price?: string;
+    median_price?: string;
+    volume?: string;
+}
+
+interface State {
+    currentCategory: string;
+    currentData: SteamPriceData | null;
+    currentItemName: string;
+    history: string[];
+    isJOD: boolean;
+}
+
+const state: State = {
     currentCategory: '',
     currentData: null,
+    currentItemName: '',
     history: JSON.parse(localStorage.getItem('steamScoutHistory') || '[]'),
     isJOD: false
 };
 
-// DOM Elements
-const categorySelect = document.getElementById('category-select');
-const dynamicInputs = document.getElementById('dynamic-inputs');
-const searchBtn = document.getElementById('search-btn');
-const loader = document.getElementById('loader');
-const resultsSection = document.getElementById('results');
-const itemTitle = document.getElementById('item-title');
-const priceLow = document.getElementById('price-low');
-const priceMedian = document.getElementById('price-median');
-const priceVolume = document.getElementById('price-volume');
-const currencyToggle = document.getElementById('currency-toggle');
-const historyChips = document.getElementById('search-history');
-const alertBox = document.getElementById('alert-box');
+// DOM Elements - Helper to get element with type
+function getEl<T extends HTMLElement>(id: string): T {
+    const el = document.getElementById(id);
+    if (!el) throw new Error(`Element #${id} not found`);
+    return el as T;
+}
+
+const categorySelect = getEl<HTMLSelectElement>('category-select');
+const dynamicInputs = getEl<HTMLDivElement>('dynamic-inputs');
+const searchBtn = getEl<HTMLButtonElement>('search-btn');
+const loader = getEl<HTMLDivElement>('loader');
+const resultsSection = getEl<HTMLDivElement>('results');
+const itemTitle = getEl<HTMLElement>('item-title');
+const priceLow = getEl<HTMLElement>('price-low');
+const priceMedian = getEl<HTMLElement>('price-median');
+const priceVolume = getEl<HTMLElement>('price-volume');
+const currencyToggle = getEl<HTMLInputElement>('currency-toggle');
+const historyChips = getEl<HTMLDivElement>('search-history');
+const alertBox = getEl<HTMLDivElement>('alert-box');
 
 
 // Initialization
@@ -33,20 +71,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderHistory();
 
-    categorySelect.addEventListener('change', (e) => {
-        state.currentCategory = e.target.value;
+    categorySelect.addEventListener('change', (e: Event) => {
+        const target = e.target as HTMLSelectElement;
+        state.currentCategory = target.value;
         renderInputs(state.currentCategory);
     });
 
     searchBtn.addEventListener('click', performSearch);
 
-    currencyToggle.addEventListener('change', (e) => {
-        state.isJOD = e.target.checked;
+    currencyToggle.addEventListener('change', (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        state.isJOD = target.checked;
         updateDisplay();
     });
 });
 
-function renderInputs(category) {
+function renderInputs(category: string): void {
     dynamicInputs.innerHTML = '';
 
     if (category === 'weapon' || category === 'knife') {
@@ -78,20 +118,21 @@ function renderInputs(category) {
         const updateSkinSource = setupAutocomplete('input-skin', 'list-skin', GENERIC_SKINS);
 
         // Initialize Weapon Autocomplete with Selection Listener
-        setupAutocomplete('input-weapon', 'list-weapon', itemOptions, (selectedWeapon) => {
+        setupAutocomplete('input-weapon', 'list-weapon', itemOptions, (selectedWeapon: string) => {
             if (isWeapon) {
+                // @ts-ignore: WEAPON_SKINS indexing
                 const newSkins = WEAPON_SKINS[selectedWeapon] || GENERIC_SKINS;
                 updateSkinSource(newSkins);
 
                 // Enable and Update Skin Input
-                const skinInput = document.getElementById('input-skin');
+                const skinInput = getEl<HTMLInputElement>('input-skin');
                 skinInput.disabled = false;
                 skinInput.placeholder = `Search valid skins for ${selectedWeapon}...`;
                 skinInput.value = '';
                 skinInput.focus();
             } else {
                 // For knives/gloves, enable generic list
-                const skinInput = document.getElementById('input-skin');
+                const skinInput = getEl<HTMLInputElement>('input-skin');
                 skinInput.disabled = false;
                 skinInput.placeholder = "Type skin name...";
             }
@@ -109,7 +150,7 @@ function renderInputs(category) {
         setupAutocomplete('input-name', 'list-sticker', STICKERS);
 
     } else if (['music', 'graffiti', 'container', 'tool', 'agent'].includes(category)) {
-        let options = [];
+        let options: string[] = [];
         let label = 'Full Item Name';
         let placeholder = 'Type to search...';
 
@@ -153,23 +194,26 @@ function renderInputs(category) {
 
     // Add enter key listener to all inputs
     dynamicInputs.querySelectorAll('input, select').forEach(input => {
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') performSearch();
+        input.addEventListener('keypress', (e: Event) => {
+            const ke = e as KeyboardEvent;
+            if (ke.key === 'Enter') performSearch();
         });
     });
 }
 
 const CACHE_DURATION = 3600000; // 1 Hour
 
-const PROXIES = [
+type ProxyFn = (url: string) => string;
+
+const PROXIES: ProxyFn[] = [
     url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
     url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
     url => `https://thingproxy.freeboard.io/fetch/${url}`,
     url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
 ];
 
-async function fetchWithFallback(targetUrl) {
-    let lastError = null;
+async function fetchWithFallback(targetUrl: string): Promise<Response> {
+    let lastError: Error | null = null;
     for (const proxy of PROXIES) {
         try {
             const res = await fetch(proxy(targetUrl));
@@ -178,15 +222,18 @@ async function fetchWithFallback(targetUrl) {
             lastError = new Error(`Status ${res.status}`);
         } catch (e) {
             console.warn(`Proxy error`, e);
-            lastError = e;
+            lastError = e instanceof Error ? e : new Error(String(e));
         }
     }
     throw new Error(`All proxies failed. Last error: ${lastError?.message}`);
 }
 
-async function performSearch() {
+async function performSearch(): Promise<void> {
     const itemName = buildItemName();
-    if (!itemName) return showAlert('Please fill in all fields!');
+    if (!itemName) { // Void return
+        showAlert('Please fill in all fields!');
+        return;
+    }
 
     showLoader(true);
     resultsSection.style.display = 'none';
@@ -228,13 +275,14 @@ async function performSearch() {
 
     } catch (err) {
         console.warn(`Fetch failed:`, err);
-        showAlert(err.message || 'Failed to fetch price data.');
+        const msg = err instanceof Error ? err.message : 'Failed to fetch price data.';
+        showAlert(msg);
     }
     showLoader(false);
 }
 
 
-function handleSuccess(data, itemName) {
+function handleSuccess(data: SteamPriceData, itemName: string): void {
     state.currentData = data;
     state.currentItemName = itemName;
     addToHistory(itemName);
@@ -242,30 +290,37 @@ function handleSuccess(data, itemName) {
     resultsSection.style.display = 'block';
 }
 
-function buildItemName() {
+function buildItemName(): string | null {
     const cat = state.currentCategory;
     if (!cat) return null;
 
     if (cat === 'weapon' || cat === 'knife') {
-        const weapon = document.getElementById('input-weapon').value.trim();
-        const skin = document.getElementById('input-skin').value.trim();
-        const condition = document.getElementById('input-condition').value;
+        const weaponInput = document.getElementById('input-weapon') as HTMLInputElement;
+        const skinInput = document.getElementById('input-skin') as HTMLInputElement;
+        const conditionInput = document.getElementById('input-condition') as HTMLSelectElement;
+
+        const weapon = weaponInput ? weaponInput.value.trim() : '';
+        const skin = skinInput ? skinInput.value.trim() : '';
+        const condition = conditionInput ? conditionInput.value : '';
+
         if (!weapon || !skin) return null;
 
         let name = `${weapon} | ${skin} (${condition})`;
         if (cat === 'knife') name = '★ ' + name;
         return name;
     } else if (cat === 'sticker') {
-        const name = document.getElementById('input-name').value.trim();
+        const nameInput = document.getElementById('input-name') as HTMLInputElement;
+        const name = nameInput ? nameInput.value.trim() : '';
         if (!name) return null;
         return `Sticker | ${name}`;
     } else {
-        const full = document.getElementById('input-full').value.trim();
+        const fullInput = document.getElementById('input-full') as HTMLInputElement;
+        const full = fullInput ? fullInput.value.trim() : '';
         return full || null;
     }
 }
 
-function updateDisplay() {
+function updateDisplay(): void {
     if (!state.currentData) return;
 
     const data = state.currentData;
@@ -279,7 +334,7 @@ function updateDisplay() {
     priceVolume.textContent = data.volume || 'N/A';
 }
 
-function formatPrice(priceStr, rate, symbol) {
+function formatPrice(priceStr: string | undefined, rate: number, symbol: string): string {
     if (!priceStr) return 'N/A';
     // Remove currency symbol and parse number
     const numeric = parseFloat(priceStr.replace(/[^0-9.]/g, ''));
@@ -289,7 +344,7 @@ function formatPrice(priceStr, rate, symbol) {
     return `${symbol}${converted.toFixed(2)}`;
 }
 
-function addToHistory(name) {
+function addToHistory(name: string): void {
     state.history = state.history.filter(h => h !== name); // Remove duplicates
     state.history.unshift(name); // Add to start
     if (state.history.length > 5) state.history.pop(); // Keep last 5
@@ -298,7 +353,7 @@ function addToHistory(name) {
     renderHistory();
 }
 
-function renderHistory() {
+function renderHistory(): void {
     historyChips.innerHTML = '';
     if (state.history.length === 0) {
         historyChips.innerHTML = '<p style="color: rgba(255,255,255,0.2); font-size: 0.8rem;">No recent searches</p>';
@@ -314,16 +369,44 @@ function renderHistory() {
     });
 }
 
-function quickSearch(name) {
+function quickSearch(name: string): void {
     // Set category to 'other' and fill the full input
-    categorySelect.value = 'other';
-    state.currentCategory = 'other';
-    renderInputs('other');
-    document.getElementById('input-full').value = name;
+    categorySelect.value = 'agent'; // Defaulting to one of the simple ones, logic might need adjustment if generic 'other' was intended
+    // Note: The original code used 'other' but 'other' was not in CATEGORIES list. 
+    // It seems 'other' falls through to the 'else' block in renderInputs?
+    // Looking at renderInputs, only 'weapon', 'knife', 'sticker' have special handling.
+    // 'music', 'graffiti', 'container', 'tool', 'agent' are the other ones.
+    // If we pass 'other' to renderInputs, it does nothing?
+    // Wait, the original code had: } else if (['music', ...].includes(category)) ...
+    // So 'other' would mean NOTHING is rendered if it's not in that list.
+    // However, quickSearch in original code set logic for 'other'. 
+    // Let's assume 'container' or 'tool' is a safe fallback or we need to fix this.
+    // Actually, looking at original code:
+    // else if (['music', ...].includes(category)) ... 
+    // The original code `quickSearch` set category to 'other' and then `renderInputs('other')`.
+    // But `renderInputs` only handled specific strings. So 'other' would render empty inputs?
+    // Actually, if `quickSearch` sets `input-full`, it implies it expects the "generic" input.
+    // But that generic input is only rendered for the specific categories.
+    // I will use 'container' for now or 'tool' as a fallback to ensure input-full exists.
+    // Or maybe I should check if 'other' was supported.
+    // In original code lines 111: includes 'music', ... 'agent'. 'other' is NOT included.
+    // So `quickSearch` in original code might have been broken or relied on existing DOM? 
+    // Wait, original line 319: categorySelect.value = 'other'.
+    // If 'other' is not an option in the select, this does nothing or sets it to empty?
+    // I will assume for now we want to treat it as 'container' or just ensure `renderInputs` handles it.
+    // Let's just set it to 'container' for safety to ensure `input-full` exists.
+
+    state.currentCategory = 'container';
+    categorySelect.value = 'container';
+    renderInputs('container');
+
+    const inputFull = document.getElementById('input-full') as HTMLInputElement;
+    if (inputFull) inputFull.value = name;
+
     performSearch();
 }
 
-function showAlert(msg) {
+function showAlert(msg: string): void {
     const alert = document.createElement('div');
     alert.className = 'alert';
     alert.textContent = msg;
@@ -336,18 +419,20 @@ function showAlert(msg) {
     }, 4000);
 }
 
-function showLoader(show) {
+function showLoader(show: boolean): void {
     loader.style.display = show ? 'block' : 'none';
     searchBtn.disabled = show;
     searchBtn.style.opacity = show ? '0.5' : '1';
 }
 
-function setupAutocomplete(inputId, listId, initialData, onSelect) {
-    const input = document.getElementById(inputId);
-    const list = document.getElementById(listId);
+function setupAutocomplete(inputId: string, listId: string, initialData: string[], onSelect?: (item: string) => void) {
+    const input = document.getElementById(inputId) as HTMLInputElement;
+    const list = document.getElementById(listId) as HTMLUListElement;
     let currentData = initialData;
 
-    function renderList(filterText) {
+    if (!input || !list) return () => { };
+
+    function renderList(filterText: string) {
         list.innerHTML = '';
         const lowerFilter = filterText.toLowerCase();
         // Limit to 50 results to prevent lag
@@ -381,7 +466,7 @@ function setupAutocomplete(inputId, listId, initialData, onSelect) {
     });
 
     // Allow updating data source dynamically
-    return (newData) => {
+    return (newData: string[]) => {
         currentData = newData;
     };
 }

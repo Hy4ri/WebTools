@@ -136,35 +136,7 @@
         </div>
     </div>
 
-    <script>
-        const counters = {
-            1: 0,
-            2: 0,
-            3: 0
-        };
-
-        const multipliers = {
-            1: 1,
-            2: 2,
-            3: 3
-        };
-
-        function updateCounter(counterNumber, change) {
-            const newValue = counters[counterNumber] + change;
-            if (newValue >= 0) {
-                counters[counterNumber] = newValue;
-                document.getElementById(`counter${counterNumber}`).textContent = newValue;
-                updateTotal();
-            }
-        }
-
-        function updateTotal() {
-            const total = Object.entries(counters).reduce((sum, [counter, value]) => {
-                return sum + (value * multipliers[counter]);
-            }, 0);
-            document.getElementById('total').textContent = `Total: ${total}`;
-        }
-    </script>
+    <script type="module" src="script.ts"></script>
 </body>
 
 </html>
