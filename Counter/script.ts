@@ -1,13 +1,17 @@
 const counters: { [key: number]: number } = {
     1: 0,
     2: 0,
-    3: 0
+    3: 0,
+    4: 0,
+    5: 0
 };
 
 const multipliers: { [key: number]: number } = {
     1: 1,
     2: 2,
-    3: 3
+    3: 3,
+    4: 4,
+    5: 5
 };
 
 // Global expose since we use onclick in HTML
