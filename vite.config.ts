@@ -14,6 +14,7 @@ export default defineConfig({
                 coc: resolve(__dirname, 'Coc/index.html'),
                 counter: resolve(__dirname, 'Counter/index.html'),
                 colorConverter: resolve(__dirname, 'ColorConverter/index.html'),
+                qrCode: resolve(__dirname, 'QRCode/index.html'),
             },
         },
     },

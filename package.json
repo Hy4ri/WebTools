@@ -22,7 +22,11 @@
   "homepage": "https://github.com/hy4ri/webtools#readme",
   "devDependencies": {
     "@types/node": "^25.2.0",
+    "@types/qrcode": "^1.5.6",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
   }
 }

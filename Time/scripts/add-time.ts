@@ -1,3 +1,4 @@
+export { };
 function getInputElement(id: string): HTMLInputElement {
     const el = document.getElementById(id);
     if (!el || !(el instanceof HTMLInputElement)) {
